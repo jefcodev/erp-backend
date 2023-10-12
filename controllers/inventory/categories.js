@@ -3,7 +3,7 @@ const { db_postgres } = require("../../database/config");
 
 const getCategories = async (req, res) => {
 
-    const categories = await db_postgres.query('SELECT * FROM inv_categories ');
+    const categories = await db_postgres.query('SELECT * FROM inve_categorias ');
 
     res.json({
         ok: true,

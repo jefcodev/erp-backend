@@ -9,7 +9,7 @@ const { validarCampos } = require('../../middlewares/validar-campos');
 
 const { getCategories, deleteCategorie, createCategorie, updateCategorie} = require('../../controllers/inventory/categories');
 const { getUnits, createUnit, deleteUnit, updateUnit } = require('../../controllers/inventory/units');
-const { getProducts, createProduct } = require('../../controllers/inventory/products');
+const { getProducts, createProduct, updateProduct } = require('../../controllers/inventory/products');
 
 
 const router = Router();
@@ -31,7 +31,7 @@ router.delete('/units/:id',validarJWT, deleteUnit);
 
 router.get( '/products' ,validarJWT, getProducts );
 router.post( '/products' ,validarJWT, createProduct);
-router.put('/products/:id',validarJWT, updateUnit);
+router.put('/products/:id',validarJWT, updateProduct);
 router.delete('/products/:id',validarJWT, deleteUnit);
 
 
