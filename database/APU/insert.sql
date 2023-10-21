@@ -8,7 +8,6 @@ INSERT INTO public.inve_ice (descripcion, valor, estado)
 VALUES('Otros materiales de Construcción',5, true);
 
 
-
 INSERT INTO "inve_unidades" ("descripcion","estado") values
   ('Unidad',TRUE),
   ('Metros cuadrados',TRUE),
@@ -19,14 +18,11 @@ INSERT INTO "inve_unidades" ("descripcion","estado") values
   ('Caja',TRUE);
 
 
-
-
 INSERT INTO public.inve_tipos_inventarios
 (descripcion, estado)
 VALUES('Materiales', True),
 ('Herramientas', True),
 ('Suministros', True);
-
 
 INSERT INTO public.inve_categorias
 (descripcion)
