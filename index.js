@@ -26,6 +26,11 @@ app.use('/api/v1/inventory', require('./routes/inventory/inventory'));
 
 //Purchase
 app.use('/api/v1/purchase', require('./routes/purchase/purchases'));
+// Compras
+app.use('/api/v1/proveedores', require('./routes/compra/proveedores'));
+//app.use('/api/v1/facturas', require('./routes/compra/facturas'));
+//app.use('/api/v1/detalle-facturas', require('./routes/compra/detalle-facturas'));
+
 
 //Quoation
 app.use('/api/v1/quotation', require('./routes/quotation/quotations'));
