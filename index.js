@@ -38,7 +38,7 @@ app.use('/api/v1/facturas', require('./routes/compra/facturas'));
 app.use('/api/v1/detalle-facturas', require('./routes/compra/detalle-facturas'));
 
 // Ventas
-//app.use('/api/v1/clientes', require('./routes/venta/clientes'));
+app.use('/api/v1/clientes', require('./routes/venta/clientes'));
 
 // Quoation
 app.use('/api/v1/quotation', require('./routes/quotation/quotations'));
