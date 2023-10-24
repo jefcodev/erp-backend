@@ -29,6 +29,9 @@ app.use('/api/v1/upload', require('./routes/uploads'));
 // Inventory
 app.use('/api/v1/inventory', require('./routes/inventory/inventory'));
 
+// Inventario
+app.use('/api/v1/productos', require('./routes/inventario/productos'));
+
 // Purchase
 app.use('/api/v1/purchase', require('./routes/purchase/purchases'));
 

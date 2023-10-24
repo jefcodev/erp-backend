@@ -35,9 +35,9 @@ const getFacturaById = async (req, res) => {
             });
         }
 
-        const valor_total = factura[0].valor_total;
+        const importe_total = factura[0].importe_total;
         const abono = factura[0].abono;
-        const saldo = valor_total - abono;
+        const saldo = importe_total - abono;
 
         res.json({
             ok: true,
@@ -56,8 +56,8 @@ const getFacturaById = async (req, res) => {
 
 // Crear nueva factura
 const createFactura = async (req, res = response) => {
-    //const { id_proveedor, id_forma_pago, id_asiento, codigo, fecha_emision, fecha_vencimiento, estado_pago, subtotal_sin_impuestos, total_descuento, iva, valor_total, abono } = req.body;
-    const { id_proveedor, id_forma_pago, id_asiento, codigo, fecha_emision, fecha_vencimiento, subtotal_sin_impuestos, total_descuento, iva, valor_total, abono } = req.body;
+    //const { id_proveedor, id_forma_pago, id_asiento, codigo, fecha_emision, fecha_vencimiento, estado_pago, total_sin_impuestos, total_descuento, iva, importe_total, abono } = req.body;
+    const { id_proveedor, id_forma_pago, id_asiento, codigo, fecha_emision, fecha_vencimiento, total_sin_impuestos, total_descuento, iva, importe_total, abono } = req.body;
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({
@@ -68,15 +68,15 @@ const createFactura = async (req, res = response) => {
     }
 
     let estado_pago = "PENDIENTE";
-    if (valor_total == abono) {
+    if (importe_total == abono) {
         estado_pago = "PAGADO";
     }
 
     try {
         const factura = await db_postgres.one(
-            "INSERT INTO public.comp_facturas_compras (id_proveedor, id_forma_pago, id_asiento, codigo, fecha_emision, fecha_vencimiento, estado_pago, subtotal_sin_impuestos, total_descuento, iva, valor_total, abono, estado) " +
+            "INSERT INTO public.comp_facturas_compras (id_proveedor, id_forma_pago, id_asiento, codigo, fecha_emision, fecha_vencimiento, estado_pago, total_sin_impuestos, total_descuento, iva, importe_total, abono, estado) " +
             "VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *",
-            [id_proveedor, id_forma_pago, id_asiento, codigo, fecha_emision, fecha_vencimiento, estado_pago, subtotal_sin_impuestos, total_descuento, iva, valor_total, abono, true]
+            [id_proveedor, id_forma_pago, id_asiento, codigo, fecha_emision, fecha_vencimiento, estado_pago, total_sin_impuestos, total_descuento, iva, importe_total, abono, true]
         );
 
         res.json({
@@ -110,7 +110,7 @@ const updateFactura = async (req, res = response) => {
         }
 
         let estado_pago = "";
-        if (facturaExists.valor_total == abono_sumado) {
+        if (facturaExists.importe_total == abono_sumado) {
             estado_pago = "PAGADO";
         }else{
             estado_pago = "PENDIENTE";

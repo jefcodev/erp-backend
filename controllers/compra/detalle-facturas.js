@@ -7,7 +7,7 @@ const { db_postgres } = require("../../database/config");
 const getDetalleFacturas = async (req, res) => {
     try {
         const detalle_facturas = await db_postgres.query("SELECT * FROM comp_detalle_facturas_compras ORDER BY id_detalle_factura_compra ASC");
-        
+
         res.json({
             ok: true,
             detalle_facturas,
@@ -98,12 +98,12 @@ const createDetalleFactura = async (req, res = response) => {
     try {
         const promises = detalles.map(async (detalle) => {
 
-            const { id_producto, id_factura_compra, codigo_principal, detalle_adicional, cantidad, descripcion, precio_unitario, subsidio, precio_sin_subsidio, descuento, codigo_auxiliar, precio_total, iva, ice } = detalle;
+            const { id_producto, id_factura_compra, codigo_principal, descripcion, cantidad, precio_unitario, descuento, precio_total_sin_impuesto, codigo, codigo_porcentaje, tarifa, base_imponible, valor, iva, ice, precio_total } = detalle;
 
             const detalle_factura = await db_postgres.one(
-                "INSERT INTO public.comp_detalle_facturas_compras (id_producto, id_factura_compra, codigo_principal, detalle_adicional, cantidad, descripcion, precio_unitario, subsidio, precio_sin_subsidio, descuento, codigo_auxiliar, precio_total, iva, ice) " +
-                "VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *",
-                [id_producto, id_factura_compra, codigo_principal, detalle_adicional, cantidad, descripcion, precio_unitario, subsidio, precio_sin_subsidio, descuento, codigo_auxiliar, precio_total, iva, ice]
+                "INSERT INTO public.comp_detalle_facturas_compras (id_producto, id_factura_compra, codigo_principal, descripcion, cantidad, precio_unitario, descuento, precio_total_sin_impuesto, codigo, codigo_porcentaje, tarifa, base_imponible, valor, iva, ice, precio_total) " +
+                "VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING *",
+                [id_producto, id_factura_compra, codigo_principal, descripcion, cantidad, precio_unitario, descuento, precio_total_sin_impuesto, codigo, codigo_porcentaje, tarifa, base_imponible, valor, iva, ice, precio_total]
             );
 
             return detalle_factura;
