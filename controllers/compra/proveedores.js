@@ -6,7 +6,7 @@ const { db_postgres } = require("../../database/config");
 // Obtener todos los proveedores
 const getProveedores = async (req, res) => {
     try {
-        const proveedores = await db_postgres.query("SELECT * FROM comp_proveedores ORDER BY id_proveedor DESC");
+        const proveedores = await db_postgres.query("SELECT * FROM comp_proveedores ORDER BY id_proveedor ASC");
 
         res.json({
             ok: true,
@@ -87,7 +87,7 @@ const getProveedorByIndentificacion = async (req, res) => {
 
 // Crear un nuevo proveedor
 const createProveedor = async (req, res = response) => {
-    const { identificacion, nombre, apellido, nombre_comercial, direccion, telefono, email } = req.body;
+    const { identificacion, razon_social, nombre_comercial, direccion, telefono, email, tipo_contribuyente, regimen, categoria, obligado_contabilidad, agente_retención, contribuyente_especial } = req.body;
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({
@@ -112,8 +112,8 @@ const createProveedor = async (req, res = response) => {
             });
         }
         const proveedor = await db_postgres.one(
-            "INSERT INTO comp_proveedores (identificacion, nombre, apellido, nombre_comercial, direccion, telefono, email, estado) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *",
-            [identificacion, nombre, apellido, nombre_comercial, direccion, telefono, email, true]
+            "INSERT INTO comp_proveedores (identificacion, razon_social, nombre_comercial, direccion, telefono, email, estado) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
+            [identificacion, razon_social, nombre_comercial, direccion, telefono, email, true]
         );
         //const token = await generarJWT(proveedor.id_proveedor);
         res.json({
@@ -134,7 +134,7 @@ const createProveedor = async (req, res = response) => {
 // Actualizar un proveedor
 const updateProveedor = async (req, res = response) => {
     const id_proveedor = req.params.id;
-    const { nombre, apellido, nombre_comercial, direccion, telefono, email } = req.body;
+    const { razon_social, nombre_comercial, direccion, telefono, email } = req.body;
     try {
         const proveedorExists = await db_postgres.oneOrNone("SELECT * FROM comp_proveedores WHERE id_proveedor = $1", [id_proveedor]);
         if (!proveedorExists) {
@@ -151,8 +151,8 @@ const updateProveedor = async (req, res = response) => {
             });
         }
         const proveedorUpdate = await db_postgres.one(
-            "UPDATE comp_proveedores SET nombre = $1, apellido = $2, nombre_comercial = $3, direccion = $4, telefono = $5, email = $6 WHERE id_proveedor = $7 RETURNING *",
-            [nombre, apellido, nombre_comercial, direccion, telefono, email, id_proveedor]
+            "UPDATE comp_proveedores SET razon_social = $1, nombre_comercial = $2, direccion = $3, telefono = $4, email = $5 WHERE id_proveedor = $6 RETURNING *",
+            [razon_social, nombre_comercial, direccion, telefono, email, id_proveedor]
         );
         res.json({
             ok: true,

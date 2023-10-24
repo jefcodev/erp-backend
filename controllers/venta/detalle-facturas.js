@@ -1,0 +1,169 @@
+const { response } = require("express");
+const { validationResult } = require("express-validator");
+const { generarJWT } = require("../../helpers/jwt");
+const { db_postgres } = require("../../database/config");
+
+// Obtener todos los detalle_facturas
+const getDetalleFacturas = async (req, res) => {
+    try {
+        const detalle_facturas = await db_postgres.query("SELECT * FROM vent_detalle_facturas_ventas ORDER BY id_detalle_factura_venta ASC");
+        
+        res.json({
+            ok: true,
+            detalle_facturas,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            ok: false,
+            msg: "Error al obtener los detalle_facturas.",
+        });
+    }
+};
+
+// Obtener un detalle_factura por su ID
+const getDetalleFacturaById = async (req, res) => {
+    try {
+        const id_detalle_factura_venta = req.params.id;
+
+        console.log("getFacturaById")
+        console.log("id")
+        console.log(id_detalle_factura_venta)
+
+        const detalle_factura = await db_postgres.query("SELECT * FROM vent_detalle_facturas_ventas WHERE id_detalle_factura_venta = $1", [id_detalle_factura_venta]);
+        if (!detalle_factura) {
+            return res.status(404).json({
+                ok: false,
+                msg: "Detalle Factura no encontrado.",
+            });
+        }
+        res.json({
+            ok: true,
+            detalle_factura,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            ok: false,
+            msg: "Error al obtener el detalle_factura.",
+        });
+    }
+};
+
+
+// Obtener un detalle_factura por su ID_FACTURA
+const getDetalleFacturasByFactura = async (req, res) => {
+    try {
+
+        const id_factura_venta = req.params.factura;
+
+        if (!id_factura_venta) {
+            return res.status(400).json({
+                ok: false,
+                msg: "El id_factura_venta de cuenta es requerido.",
+            });
+        }
+
+        const detalle_facturas = await db_postgres.query(`
+            SELECT * FROM vent_detalle_facturas_ventas
+            WHERE id_factura_venta = $1
+        `, [id_factura_venta]);
+
+        if (!detalle_facturas) {
+            return res.status(404).json({
+                ok: false,
+                msg: "Detalles de Factura no encontrado.",
+            });
+        }
+        res.json({
+            ok: true,
+            detalle_facturas,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            ok: false,
+            msg: "Error al obtener el detalle_factura.",
+        });
+    }
+};
+
+// Crear un nuevo detalle_factura
+const createDetalleFactura = async (req, res = response) => {
+    console.log('----------------------');
+    console.log('CREAR DETALLE Factura');
+
+    const { detalles } = req.body; // Obtener el arreglo de detalles desde el cuerpo de la solicitud
+
+    try {
+        const promises = detalles.map(async (detalle) => {
+
+            const { id_producto, id_factura_venta, codigo_principal, detalle_adicional, cantidad, descripcion, precio_unitario, subsidio, precio_sin_subsidio, descuento, codigo_auxiliar, precio_total, iva, ice } = detalle;
+
+            const detalle_factura = await db_postgres.one(
+                "INSERT INTO public.vent_detalle_facturas_ventas (id_producto, id_factura_venta, codigo_principal, detalle_adicional, cantidad, descripcion, precio_unitario, subsidio, precio_sin_subsidio, descuento, codigo_auxiliar, precio_total, iva, ice) " +
+                "VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *",
+                [id_producto, id_factura_venta, codigo_principal, detalle_adicional, cantidad, descripcion, precio_unitario, subsidio, precio_sin_subsidio, descuento, codigo_auxiliar, precio_total, iva, ice]
+            );
+
+            return detalle_factura;
+        });
+
+        const detalle_facturas = await Promise.all(promises);
+
+        const token = await generarJWT(detalle_facturas[0].id_detalle_factura_venta);
+        res.json({
+            ok: true,
+            msg: "Detalles de factura creados correctamente.",
+            detalle_facturas,
+            token: token,
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(501).json({
+            ok: false,
+            msg: "Error al crear los detalles de factura. Por favor, inténtalo de nuevo.",
+        });
+    }
+};
+
+
+// Actualizar un detalle_factura
+const updateDetalleFactura = async (req, res = response) => {
+    const id_detalle_factura_venta = req.params.id;
+    const { descripcion } = req.body;
+    try {
+        const facturaExists = await db_postgres.oneOrNone("SELECT * FROM vent_detalle_facturas_ventas WHERE id_detalle_factura_venta = $1", [id_detalle_factura_venta]);
+        if (!facturaExists) {
+            return res.status(400).json({
+                ok: false,
+                msg: "El detalle_factura no existe. Por favor, proporciona un ID de detalle_factura válido.",
+            });
+        }
+        const facturaUpdate = await db_postgres.one(
+            "UPDATE vent_detalle_facturas_ventas SET descripcion = $1 WHERE id_detalle_factura_venta = $2 RETURNING *",
+            [descripcion, id_detalle_factura_venta]
+        );
+        res.json({
+            ok: true,
+            msg: "Detalle Factura actualizado correctamente.",
+            facturaUpdate,
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(501).json({
+            ok: false,
+            msg: "Error al actualizar el detalle_factura. Por favor, inténtalo de nuevo.",
+        });
+    }
+};
+
+
+
+module.exports = {
+    getDetalleFacturas,
+    getDetalleFacturaById,
+    getDetalleFacturasByFactura,
+    createDetalleFactura,
+    updateDetalleFactura,
+};
