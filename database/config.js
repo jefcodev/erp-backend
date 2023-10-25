@@ -3,16 +3,16 @@ const config = {
 
 
     /* Local */
-    host: "localhost",
+    /* host: "localhost",
     port: "5432",
     database: "inveservice-online",
     user: "postgres",
-    password: "2023", 
-    /*host: 'systemcode.ec',
+    password: "2023",  */
+    host: 'systemcode.ec',
     port: '5432',
     database: 'inveservice',
     user: 'root',
-    password: 'Kuka0481@_'*/
+    password: 'Kuka0481@_'
 };
 
 const pgp = pgPromise({});

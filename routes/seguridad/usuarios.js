@@ -5,16 +5,18 @@ const { Router } = require('express');
 const { check } = require('express-validator');
 const { validarCampos } = require('../../middlewares/validar-campos');
 
-const { getUsuarios, createUsuario, getUsuarioById, deleteUsuario, updateUsuario, updateActivateUser } = require('../../controllers/seguridad/usuarios');
+const { getUsuarios, createUsuario, getUsuarioById, deleteUsuario, updateUsuario, updateActivateUser, getPermisos } = require('../../controllers/seguridad/usuarios');
 const { validarJWT } = require('../../middlewares/validar-jwt');
+const { validarPermisos } = require('../../middlewares/validar-permisos');
 
 
 
 const router = Router();
 
 
-router.get('/', validarJWT, getUsuarios);
-router.post('/',validarJWT,
+router.get('/', [validarJWT], getUsuarios);
+//router.get('/',  getPermisos);
+router.post('/',[validarJWT],
     /* [   validarJWT,
         check('nombre', 'El nombre es obligatorio').not().isEmpty(),
         check('password', 'El password es obligatorio').not().isEmpty(),

@@ -3,7 +3,6 @@ const bcrypt = require("bcryptjs");
 const { generarJWT } = require("../../helpers/jwt");
 const { db_postgres } = require("../../database/config");
 
-
 const getUsuarios = async (req, res) => {
   try {
     const desde = Number(req.query.desde) || 0;
@@ -13,11 +12,10 @@ const getUsuarios = async (req, res) => {
     const queryUsers = ` SELECT * FROM sec_users OFFSET $1 LIMIT $2;`;
     const queryUsersCount = `SELECT COUNT(*) FROM sec_users ;`;
 
-
-    //Promesas 
+    //Promesas
     const [usuarios, total] = await Promise.all([
       db_postgres.query(queryUsers, [desde, limit]),
-      db_postgres.one(queryUsersCount)
+      db_postgres.one(queryUsersCount),
     ]);
 
     const totalCount = total.count;
@@ -25,9 +23,8 @@ const getUsuarios = async (req, res) => {
     res.json({
       ok: true,
       usuarios,
-      total: totalCount
+      total: totalCount,
     });
-
   } catch (error) {
     res.status(500).json({
       ok: false,
@@ -181,7 +178,11 @@ const updateActivateUser = async (req, res = response) => {
   const { id } = req.params;
 
   try {
-    const userUpdate = await db_postgres.query("UPDATE sec_users SET estado = $1 WHERE id = $2", [true, id]);
+    const userUpdate = await db_postgres.query(
+      "UPDATE sec_users SET estado = $1 WHERE id = $2",
+      [true, id]
+    );
+
     res.json({
       ok: true,
       msg: "Usuario activado correctamente",
@@ -196,11 +197,44 @@ const updateActivateUser = async (req, res = response) => {
   }
 };
 
+
+const getPermisos = async (usuarioId, res) => {
+  try {
+    console.log("getPermisos uid: " + usuarioId);
+
+    const rolResult = await db_postgres.oneOrNone(
+      "SELECT rol_id FROM sec_users WHERE id = $1",
+      [usuarioId]
+    );
+    console.log("Rol result: ", rolResult.rol_id);
+
+    const id_rol = rolResult.rol_id;
+
+    const permisosResult = await db_postgres.any("SELECT p.nombre FROM sec_permisos AS p JOIN roles_modulos_permisos AS rmp ON rmp.id_permiso = p.id WHERE rmp.id_rol = $1", [id_rol]);
+
+    const permisos = permisosResult.map((row) => row.nombre);
+
+    console.log('Permisos: ' + permisos);
+
+    if (Array.isArray(permisos) && permisos.length > 0) {
+      return permisos;
+    } else {
+      console.log("No se encontraron filas en el resultado.");
+      return [];
+    }
+  } catch (error) {
+    console.error("Error en getPermisos:", error);
+    throw error;
+  }
+};
+
+
 module.exports = {
   getUsuarios,
   getUsuarioById,
+  getPermisos,
   createUsuario,
   deleteUsuario,
   updateUsuario,
-  updateActivateUser
+  updateActivateUser,
 };
