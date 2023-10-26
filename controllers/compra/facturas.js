@@ -71,10 +71,14 @@ const createFactura = async (req, res = response) => {
     if (importe_total == abono) {
         estado_pago = "PAGADO";
     }
+    console.log("LLEGA FECHA: ", fecha_emision)
+    console.log("LLEGA FECHA: ", fecha_vencimiento)
+
     try {
         const factura = await db_postgres.one(
             "INSERT INTO public.comp_facturas_compras (id_proveedor, id_forma_pago, id_asiento, id_info_tributaria, clave_acceso, codigo, fecha_emision, fecha_vencimiento, estado_pago, total_sin_impuesto, total_descuento, iva, propina, importe_total, abono, estado) " +
-            "VALUES ($1, $2, $3, $4, $5, $6, to_date($7, 'DD/MM/YYYY'), to_date($8, 'DD/MM/YYYY'), $9, $10, $11, $12, $13, $14, $15, $16) RETURNING *",
+            //"VALUES ($1, $2, $3, $4, $5, $6, to_date($7, 'DD/MM/YYYY'), to_date($8, 'DD/MM/YYYY'), $9, $10, $11, $12, $13, $14, $15, $16) RETURNING *",
+            "VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING *",
             [id_proveedor, id_forma_pago, id_asiento,id_info_tributaria, clave_acceso, codigo, fecha_emision, fecha_vencimiento, estado_pago, total_sin_impuesto, total_descuento, iva, propina, importe_total, abono, true]
         );
 
