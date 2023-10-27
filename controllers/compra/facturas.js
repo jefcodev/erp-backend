@@ -6,7 +6,7 @@ const { db_postgres } = require("../../database/config");
 // Obtener todos los facturas
 const getFacturas = async (req, res) => {
     try {
-        const facturas = await db_postgres.query("SELECT * FROM comp_facturas_compras ORDER BY id_factura_compra ASC");
+        const facturas = await db_postgres.query("SELECT * FROM comp_facturas_compras ORDER BY id_factura_compra DESC");
 
         res.json({
             ok: true,
@@ -56,8 +56,8 @@ const getFacturaById = async (req, res) => {
 
 // Crear nueva factura
 const createFactura = async (req, res = response) => {
-    //const { id_proveedor, id_forma_pago, id_asiento, codigo, fecha_emision, fecha_vencimiento, estado_pago, total_sin_impuesto, total_descuento, iva, importe_total, abono } = req.body;
-    const { id_proveedor, id_forma_pago, id_asiento, id_info_tributaria, clave_acceso, codigo, fecha_emision, fecha_vencimiento, total_sin_impuesto, total_descuento, iva, propina, importe_total, abono } = req.body;
+    //const { id_proveedor, id_forma_pago, id_asiento, codigo, fecha_emision, fecha_vencimiento, estado_pago, total_sin_impuesto, total_descuento, valor, importe_total, abono } = req.body;
+    const { id_proveedor, id_forma_pago, id_asiento, id_info_tributaria, clave_acceso, codigo, fecha_emision, fecha_vencimiento, total_sin_impuesto, total_descuento, valor, propina, importe_total, abono } = req.body;
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({
@@ -76,10 +76,10 @@ const createFactura = async (req, res = response) => {
 
     try {
         const factura = await db_postgres.one(
-            "INSERT INTO public.comp_facturas_compras (id_proveedor, id_forma_pago, id_asiento, id_info_tributaria, clave_acceso, codigo, fecha_emision, fecha_vencimiento, estado_pago, total_sin_impuesto, total_descuento, iva, propina, importe_total, abono, estado) " +
+            "INSERT INTO public.comp_facturas_compras (id_proveedor, id_forma_pago, id_asiento, id_info_tributaria, clave_acceso, codigo, fecha_emision, fecha_vencimiento, estado_pago, total_sin_impuesto, total_descuento, valor, propina, importe_total, abono, estado) " +
             //"VALUES ($1, $2, $3, $4, $5, $6, to_date($7, 'DD/MM/YYYY'), to_date($8, 'DD/MM/YYYY'), $9, $10, $11, $12, $13, $14, $15, $16) RETURNING *",
             "VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING *",
-            [id_proveedor, id_forma_pago, id_asiento,id_info_tributaria, clave_acceso, codigo, fecha_emision, fecha_vencimiento, estado_pago, total_sin_impuesto, total_descuento, iva, propina, importe_total, abono, true]
+            [id_proveedor, id_forma_pago, id_asiento,id_info_tributaria, clave_acceso, codigo, fecha_emision, fecha_vencimiento, estado_pago, total_sin_impuesto, total_descuento, valor, propina, importe_total, abono, true]
         );
 
         res.json({

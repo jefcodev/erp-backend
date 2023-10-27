@@ -6,7 +6,7 @@ const { db_postgres } = require("../../database/config");
 // Obtener todos los productos
 const getProductos = async (req, res) => {
     try {
-        const productos = await db_postgres.query("SELECT * FROM inve_productos ORDER BY id_producto ASC");
+        const productos = await db_postgres.query("SELECT * FROM inve_productos ORDER BY id_producto DESC");
 
         res.json({
             ok: true,
@@ -47,7 +47,8 @@ const getProductoById = async (req, res) => {
 
 // Crear un nuevo producto
 const createProducto = async (req, res = response) => {
-    const { codigo_principal, descripcion, stock, precio_compra } = req.body;
+    //const { codigo_principal, descripcion, stock, precio_compra } = req.body;
+    const { codigo_principal, descripcion, stock, stock_minimo, stock_maximo, precio_compra } = req.body;
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({
@@ -77,8 +78,8 @@ const createProducto = async (req, res = response) => {
             });
         } else {
             const producto = await db_postgres.one(
-                `INSERT INTO inve_productos (codigo_principal, descripcion, stock, precio_compra, fecha_registro, estado) VALUES ($1, $2, $3, $4, CURRENT_DATE, $5) RETURNING *`,
-                [codigo_principal, descripcion, stock, precio_compra, true]
+                `INSERT INTO inve_productos (codigo_principal, descripcion, stock, stock_minimo, stock_maximo, precio_compra, fecha_registro, estado) VALUES ($1, $2, $3, $4, $5, $6, CURRENT_DATE, $7) RETURNING *`,
+                [codigo_principal, descripcion, stock, stock_minimo, stock_maximo, precio_compra, true]
             );
             res.json({
                 ok: true,
@@ -98,7 +99,7 @@ const createProducto = async (req, res = response) => {
 // Actualizar un producto
 const updateProducto = async (req, res = response) => {
     const id_producto = req.params.id;
-    const { codigo_principal, descripcion, stock, utilidad, descuento, precio_compra, precio_venta } = req.body;
+    const { codigo_principal, descripcion, stock, stock_minimo, stock_maximo, utilidad, descuento, precio_compra, precio_venta } = req.body;
     try {
         const productoExists = await db_postgres.oneOrNone("SELECT * FROM inve_productos WHERE id_producto = $1", [id_producto]);
         if (!productoExists) {
@@ -108,8 +109,8 @@ const updateProducto = async (req, res = response) => {
             });
         }
         const productoUpdate = await db_postgres.one(
-            "UPDATE inve_productos SET codigo_principal = $1, descripcion = $2, stock = $3, utilidad = $4, descuento = $5, precio_compra = $6, precio_venta = $7  WHERE id_producto = $8 RETURNING *",
-            [codigo_principal, descripcion, stock, utilidad, descuento, precio_compra, precio_venta, id_producto]
+            "UPDATE inve_productos SET codigo_principal = $1, descripcion = $2, stock = $3, stock_minimo = $4, stock_maximo = $5, utilidad = $6, descuento = $7, precio_compra = $8, precio_venta = $9  WHERE id_producto = $10 RETURNING *",
+            [codigo_principal, descripcion, stock, stock_minimo, stock_maximo, utilidad, descuento, precio_compra, precio_venta, id_producto]
         );
         res.json({
             ok: true,
