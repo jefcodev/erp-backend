@@ -58,6 +58,16 @@ const createProducto = async (req, res = response) => {
         });
     }
     try {
+        const producto = await db_postgres.one(
+            `INSERT INTO inve_productos (codigo_principal, descripcion, stock, stock_minimo, stock_maximo, precio_compra, fecha_registro, estado) VALUES ($1, $2, $3, $4, $5, $6, CURRENT_DATE, $7) RETURNING *`,
+            [codigo_principal, descripcion, stock, stock_minimo, stock_maximo, precio_compra, true]
+        );
+        res.json({
+            ok: true,
+            msg: "Producto creado correctamente.",
+            producto,
+        });
+        /*
         const productoExiste = await db_postgres.oneOrNone("SELECT * FROM inve_productos WHERE codigo_principal = $1", [codigo_principal]);
 
         if (productoExiste) {
@@ -87,6 +97,7 @@ const createProducto = async (req, res = response) => {
                 producto,
             });
         }
+        */
     } catch (error) {
         console.log(error);
         res.status(501).json({
