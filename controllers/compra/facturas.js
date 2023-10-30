@@ -31,7 +31,7 @@ const getFacturaById = async (req, res) => {
         if (!factura) {
             return res.status(404).json({
                 ok: false,
-                msg: "Factura no encontrado.",
+                msg: "Factura no encontrada.",
             });
         }
 
@@ -79,7 +79,7 @@ const createFactura = async (req, res = response) => {
             "INSERT INTO public.comp_facturas_compras (id_proveedor, id_forma_pago, id_asiento, id_info_tributaria, clave_acceso, codigo, fecha_emision, fecha_vencimiento, estado_pago, total_sin_impuesto, total_descuento, valor, propina, importe_total, abono, estado) " +
             //"VALUES ($1, $2, $3, $4, $5, $6, to_date($7, 'DD/MM/YYYY'), to_date($8, 'DD/MM/YYYY'), $9, $10, $11, $12, $13, $14, $15, $16) RETURNING *",
             "VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING *",
-            [id_proveedor, id_forma_pago, id_asiento,id_info_tributaria, clave_acceso, codigo, fecha_emision, fecha_vencimiento, estado_pago, total_sin_impuesto, total_descuento, valor, propina, importe_total, abono, true]
+            [id_proveedor, id_forma_pago, id_asiento, id_info_tributaria, clave_acceso, codigo, fecha_emision, fecha_vencimiento, estado_pago, total_sin_impuesto, total_descuento, valor, propina, importe_total, abono, true]
         );
 
         res.json({
@@ -99,7 +99,7 @@ const createFactura = async (req, res = response) => {
 // Actualizar un factura
 const updateFactura = async (req, res = response) => {
     const id_factura_compra = req.params.id;
-    const { estado_pago, abono } = req.body;
+    const { abono } = req.body;
     try {
         const facturaExists = await db_postgres.oneOrNone("SELECT * FROM comp_facturas_compras WHERE id_factura_compra = $1", [id_factura_compra]);
 

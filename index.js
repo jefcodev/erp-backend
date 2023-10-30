@@ -54,11 +54,13 @@ app.use('/api/v1/apu', require('./routes/apu/apus'));
 // Contabilidad
 app.use('/api/v1/cuentas', require('./routes/contabilidad/cuentas'));
 app.use('/api/v1/formas-pago', require('./routes/contabilidad/formas-pago'));
+app.use('/api/v1/tarifas-iva', require('./routes/contabilidad/tarifas-iva'));
 app.use('/api/v1/asientos', require('./routes/contabilidad/asientos'));
 app.use('/api/v1/detalle-asientos', require('./routes/contabilidad/detalle-asientos'));
 app.use('/api/v1/libro-diario', require('./routes/contabilidad/libro-diario'));
 app.use('/api/v1/libro-mayor', require('./routes/contabilidad/libro-mayor'));
 app.use('/api/v1/balance-general', require('./routes/contabilidad/balance-general'));
+app.use('/api/v1/estado-resultado', require('./routes/contabilidad/estado-resultado'));
 app.use('/api/v1/estado-resultado', require('./routes/contabilidad/estado-resultado'));
 
 // Busquedas
