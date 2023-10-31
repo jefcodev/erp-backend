@@ -7,7 +7,7 @@ const { db_postgres } = require("../../database/config");
 const getClientes = async (req, res) => {
     try {
         const desde = Number(req.query.desde) || 0;
-        const limit = 10;
+        const limit = Number(req.query.limit);
 
         const queryClientes = `SELECT * FROM vent_clientes ORDER BY id_cliente DESC OFFSET $1 LIMIT $2;`;
         const queryClientesCount = `SELECT COUNT(*) FROM vent_clientes`;
@@ -57,7 +57,7 @@ const getClienteById = async (req, res) => {
 
 // Crear un nuevo cliente
 const createCliente = async (req, res = response) => {
-    const { identificacion, nombre, apellido, direccion, telefono, email } = req.body;
+    const { identificacion, razon_social, direccion, telefono, email } = req.body;
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({
@@ -82,8 +82,8 @@ const createCliente = async (req, res = response) => {
             });
         }
         const cliente = await db_postgres.one(
-            "INSERT INTO vent_clientes (identificacion, nombre, apellido, direccion, telefono, email, estado) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
-            [identificacion, nombre, apellido, direccion, telefono, email, true]
+            "INSERT INTO vent_clientes (identificacion, razon_social, direccion, telefono, email, estado) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+            [identificacion, razon_social, direccion, telefono, email, true]
         );
         const token = await generarJWT(cliente.id_cliente);
         res.json({
@@ -104,7 +104,7 @@ const createCliente = async (req, res = response) => {
 // Actualizar un cliente
 const updateCliente = async (req, res = response) => {
     const id_cliente = req.params.id;
-    const { nombre, apellido, direccion, telefono, email } = req.body;
+    const { razon_social, direccion, telefono, email } = req.body;
     try {
         const clienteExists = await db_postgres.oneOrNone("SELECT * FROM vent_clientes WHERE id_cliente = $1", [id_cliente]);
         if (!clienteExists) {
@@ -121,8 +121,8 @@ const updateCliente = async (req, res = response) => {
             });
         }
         const clienteUpdate = await db_postgres.one(
-            "UPDATE vent_clientes SET nombre = $1, apellido = $2, direccion = $3, telefono = $4, email = $5 WHERE id_cliente = $6 RETURNING *",
-            [nombre, apellido, direccion, telefono, email, id_cliente]
+            "UPDATE vent_clientes SET razon_social = $1, direccion = $2, telefono = $3, email = $4 WHERE id_cliente = $5 RETURNING *",
+            [razon_social, direccion, telefono, email, id_cliente]
         );
         res.json({
             ok: true,

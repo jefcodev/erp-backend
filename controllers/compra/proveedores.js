@@ -7,7 +7,7 @@ const { db_postgres } = require("../../database/config");
 const getProveedores = async (req, res) => {
     try {
         const desde = Number(req.query.desde) || 0;
-        const limit = 10;
+        const limit = Number(req.query.limit);
 
         const queryProveedores = `SELECT * FROM comp_proveedores ORDER BY id_proveedor DESC OFFSET $1 LIMIT $2;`;
         const queryProveedoresCount = `SELECT COUNT(*) FROM comp_proveedores;`;
