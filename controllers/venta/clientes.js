@@ -6,11 +6,21 @@ const { db_postgres } = require("../../database/config");
 // Obtener todos los clientes
 const getClientes = async (req, res) => {
     try {
-        const clientes = await db_postgres.query("SELECT * FROM vent_clientes ORDER BY id_cliente DESC");
-        
+        const desde = Number(req.query.desde) || 0;
+        const limit = 10;
+
+        const queryClientes = `SELECT * FROM vent_clientes ORDER BY id_cliente DESC OFFSET $1 LIMIT $2;`;
+        const queryClientesCount = `SELECT COUNT(*) FROM vent_clientes`;
+
+        const [clientes, total] = await Promise.all([
+            db_postgres.query(queryClientes, [desde, limit]),
+            db_postgres.one(queryClientesCount),
+        ]);
+
         res.json({
             ok: true,
             clientes,
+            total: total.count
         });
     } catch (error) {
         console.error(error);

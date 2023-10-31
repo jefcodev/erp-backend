@@ -6,11 +6,21 @@ const { db_postgres } = require("../../database/config");
 // Obtener todos los proveedores
 const getProveedores = async (req, res) => {
     try {
-        const proveedores = await db_postgres.query("SELECT * FROM comp_proveedores ORDER BY id_proveedor ASC");
+        const desde = Number(req.query.desde) || 0;
+        const limit = 10;
+
+        const queryProveedores = `SELECT * FROM comp_proveedores ORDER BY id_proveedor DESC OFFSET $1 LIMIT $2;`;
+        const queryProveedoresCount = `SELECT COUNT(*) FROM comp_proveedores;`;
+
+        const [proveedores, total] = await Promise.all([
+            db_postgres.query(queryProveedores, [desde, limit]),
+            db_postgres.one(queryProveedoresCount),
+        ]);
 
         res.json({
             ok: true,
             proveedores,
+            total: total.count
         });
     } catch (error) {
         console.error(error);
@@ -64,7 +74,6 @@ const getProveedorByIndentificacion = async (req, res) => {
             SELECT * FROM COMP_PROVEEDORES
             WHERE identificacion = $1;`
             , [identificacion]);
-
 
         if (!proveedor) {
             return res.status(404).json({

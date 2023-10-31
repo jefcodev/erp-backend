@@ -48,7 +48,7 @@ const getProductoById = async (req, res) => {
 // Crear un nuevo producto
 const createProducto = async (req, res = response) => {
     //const { codigo_principal, descripcion, stock, precio_compra } = req.body;
-    const { codigo_principal, descripcion, stock, stock_minimo, stock_maximo, precio_compra } = req.body;
+    const { codigo_principal, descripcion, stock, stock_minimo, stock_maximo, tarifa, precio_compra } = req.body;
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({
@@ -59,8 +59,8 @@ const createProducto = async (req, res = response) => {
     }
     try {
         const producto = await db_postgres.one(
-            `INSERT INTO inve_productos (codigo_principal, descripcion, stock, stock_minimo, stock_maximo, precio_compra, fecha_registro, estado) VALUES ($1, $2, $3, $4, $5, $6, CURRENT_DATE, $7) RETURNING *`,
-            [codigo_principal, descripcion, stock, stock_minimo, stock_maximo, precio_compra, true]
+            `INSERT INTO inve_productos (codigo_principal, descripcion, stock, stock_minimo, stock_maximo, tarifa, precio_compra, fecha_registro, estado) VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_DATE, $8) RETURNING *`,
+            [codigo_principal, descripcion, stock, stock_minimo, stock_maximo, tarifa, precio_compra, true]
         );
         res.json({
             ok: true,
