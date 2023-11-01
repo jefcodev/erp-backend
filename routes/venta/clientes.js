@@ -1,47 +1,60 @@
-/*
-    Ruta: /api/clientes
-*/
+// Ruta: /api/clientes
+
 const { Router } = require('express');
 const { check } = require('express-validator');
+const { validarJWT } = require('../../middlewares/validar-jwt');
 const { validarCampos } = require('../../middlewares/validar-campos');
 
-const { getClientes, createCliente, getClienteById, deleteCliente, updateCliente } = require('../../controllers/venta/clientes');
-const { validarJWT } = require('../../middlewares/validar-jwt');createCliente
+const {
+    getClientes,
+    createCliente,
+    getClienteById,
+    deleteCliente,
+    updateCliente,
+    getClienteByIndentificacion,
+} = require('../../controllers/venta/clientes');
 
 const router = Router();
 
+// Rutas para obtener clientes
 router.get('/', validarJWT, getClientes);
-router.post('/', validarJWT,
-    /* [   validarJWT,
-        check('nombre', 'El nombre es obligatorio').not().isEmpty(),
-        check('password', 'El password es obligatorio').not().isEmpty(),
+router.get('/id/:id', validarJWT, getClienteById);
+router.get('/identificacion/:identificacion', validarJWT, getClienteByIndentificacion);
+
+// Ruta para crear un cliente
+router.post('/',
+    [
+        validarJWT,
+        check('identificacion', 'La identificación es obligatoria').not().isEmpty(),
+        check('razon_social', 'La razón social es obligatoria').not().isEmpty(),
+        check('direccion', 'La dirección es obligatoria').not().isEmpty(),
+        check('telefono', 'El teléfono es obligatorio').not().isEmpty(),
         check('email', 'El email es obligatorio').isEmail(),
         validarCampos,
-    ],  */
+    ],
     createCliente
 );
-router.delete('/:id',
-    /* [   validarJWT,
-        check('nombre', 'El nombre es obligatorio').not().isEmpty(),
-        check('password', 'El password es obligatorio').not().isEmpty(),
-        check('email', 'El email es obligatorio').isEmail(),
-        validarCampos,
-    ],  */
-    deleteCliente
-);
 
+// Ruta para actualizar un cliente
 router.put('/:id',
-    /* [   validarJWT,
-        check('nombre', 'El nombre es obligatorio').not().isEmpty(),
-        check('password', 'El password es obligatorio').not().isEmpty(),
+    [
+        validarJWT,
+        check('razon_social', 'La razón social es obligatoria').not().isEmpty(),
+        check('direccion', 'La dirección es obligatoria').not().isEmpty(),
+        check('telefono', 'El teléfono es obligatorio').not().isEmpty(),
         check('email', 'El email es obligatorio').isEmail(),
         validarCampos,
-    ],  */
+    ],
     updateCliente
 );
 
-router.get('/:id', getClienteById);
-
-
+// Ruta para eliminar un cliente
+router.delete('/:id',
+    [
+        validarJWT,
+        validarCampos,
+    ],
+    deleteCliente
+);
 
 module.exports = router;

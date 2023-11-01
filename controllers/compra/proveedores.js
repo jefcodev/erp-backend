@@ -1,6 +1,4 @@
-const { response } = require("express");
 const { validationResult } = require("express-validator");
-const { generarJWT } = require("../../helpers/jwt");
 const { db_postgres } = require("../../database/config");
 
 // Obtener todos los proveedores
@@ -8,15 +6,12 @@ const getProveedores = async (req, res) => {
     try {
         const desde = Number(req.query.desde) || 0;
         const limit = Number(req.query.limit);
-
         const queryProveedores = `SELECT * FROM comp_proveedores ORDER BY id_proveedor DESC OFFSET $1 LIMIT $2;`;
         const queryProveedoresCount = `SELECT COUNT(*) FROM comp_proveedores;`;
-
         const [proveedores, total] = await Promise.all([
             db_postgres.query(queryProveedores, [desde, limit]),
             db_postgres.one(queryProveedoresCount),
         ]);
-
         res.json({
             ok: true,
             proveedores,
@@ -55,26 +50,17 @@ const getProveedorById = async (req, res) => {
     }
 };
 
-// Obtener un proveedor por su ID
+// Obtener un proveedor por su identificación
 const getProveedorByIndentificacion = async (req, res) => {
     try {
         const identificacion = req.params.identificacion;
-        console.log("getCuentaByidentificacion")
-        console.log("identificacion")
-        console.log(identificacion)
-
         if (!identificacion) {
             return res.status(400).json({
                 ok: false,
                 msg: "La identificación es requerida.",
             });
         }
-
-        const proveedor = await db_postgres.query(`
-            SELECT * FROM COMP_PROVEEDORES
-            WHERE identificacion = $1;`
-            , [identificacion]);
-
+        const proveedor = await db_postgres.query(`SELECT * FROM comp_proveedores WHERE identificacion = $1;`, [identificacion]);
         if (!proveedor) {
             return res.status(404).json({
                 ok: false,
@@ -124,12 +110,10 @@ const createProveedor = async (req, res = response) => {
             "INSERT INTO comp_proveedores (identificacion, razon_social, nombre_comercial, direccion, telefono, email, estado) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
             [identificacion, razon_social, nombre_comercial, direccion, telefono, email, true]
         );
-        //const token = await generarJWT(proveedor.id_proveedor);
         res.json({
             ok: true,
             msg: "Proveedor creado correctamente.",
             proveedor,
-            //  token: token,
         });
     } catch (error) {
         console.log(error);

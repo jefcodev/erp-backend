@@ -1,6 +1,4 @@
-const { response } = require("express");
 const { validationResult } = require("express-validator");
-const { generarJWT } = require("../../helpers/jwt");
 const { db_postgres } = require("../../database/config");
 
 // Obtener todos los clientes
@@ -8,15 +6,12 @@ const getClientes = async (req, res) => {
     try {
         const desde = Number(req.query.desde) || 0;
         const limit = Number(req.query.limit);
-
         const queryClientes = `SELECT * FROM vent_clientes ORDER BY id_cliente DESC OFFSET $1 LIMIT $2;`;
         const queryClientesCount = `SELECT COUNT(*) FROM vent_clientes`;
-
         const [clientes, total] = await Promise.all([
             db_postgres.query(queryClientes, [desde, limit]),
             db_postgres.one(queryClientesCount),
         ]);
-
         res.json({
             ok: true,
             clientes,
@@ -35,7 +30,9 @@ const getClientes = async (req, res) => {
 const getClienteById = async (req, res) => {
     try {
         const id_cliente = req.params.id;
+
         const cliente = await db_postgres.query("SELECT * FROM vent_clientes WHERE id_cliente = $1", [id_cliente]);
+
         if (!cliente) {
             return res.status(404).json({
                 ok: false,
@@ -54,6 +51,41 @@ const getClienteById = async (req, res) => {
         });
     }
 };
+
+
+
+// Obtener un cliente por su identificación
+const getClienteByIndentificacion = async (req, res) => {
+    try {
+        const identificacion = req.params.identificacion;
+        if (!identificacion) {
+            return res.status(400).json({
+                ok: false,
+                msg: "La identificación es requerida.",
+            });
+        }
+
+        const proveedor = await db_postgres.query(`SELECT * FROM vent_clientes WHERE identificacion = $1;`, [identificacion]);
+
+        if (!proveedor) {
+            return res.status(404).json({
+                ok: false,
+                msg: "Proveedor no encontrado.",
+            });
+        }
+        res.json({
+            ok: true,
+            proveedor,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            ok: false,
+            msg: "Error al obtener el proveedor.",
+        });
+    }
+};
+
 
 // Crear un nuevo cliente
 const createCliente = async (req, res = response) => {
@@ -85,12 +117,10 @@ const createCliente = async (req, res = response) => {
             "INSERT INTO vent_clientes (identificacion, razon_social, direccion, telefono, email, estado) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
             [identificacion, razon_social, direccion, telefono, email, true]
         );
-        const token = await generarJWT(cliente.id_cliente);
         res.json({
             ok: true,
             msg: "Cliente creado correctamente.",
             cliente,
-            token: token,
         });
     } catch (error) {
         console.log(error);
@@ -167,6 +197,7 @@ const deleteCliente = async (req, res = response) => {
 module.exports = {
     getClientes,
     getClienteById,
+    getClienteByIndentificacion,
     createCliente,
     updateCliente,
     deleteCliente,

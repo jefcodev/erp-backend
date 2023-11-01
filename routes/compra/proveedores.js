@@ -1,46 +1,60 @@
-/*
-    Ruta: /api/proveedores
-*/
+// Ruta: /api/proveedores
+
 const { Router } = require('express');
 const { check } = require('express-validator');
+const { validarJWT } = require('../../middlewares/validar-jwt');
 const { validarCampos } = require('../../middlewares/validar-campos');
 
-const { getProveedores, getProveedorById, getProveedorByIndentificacion, createProveedor, updateProveedor, deleteProveedor } = require('../../controllers/compra/proveedores');
-const { validarJWT } = require('../../middlewares/validar-jwt');
+const {
+    getProveedores,
+    getProveedorById,
+    getProveedorByIndentificacion,
+    createProveedor,
+    updateProveedor,
+    deleteProveedor
+} = require('../../controllers/compra/proveedores');
 
 const router = Router();
 
+// Rutas para obtener provedores
 router.get('/', validarJWT, getProveedores);
-router.get('/id/:id', getProveedorById);
-router.get('/identificacion/:identificacion', getProveedorByIndentificacion);
+router.get('/id/:id', validarJWT, getProveedorById);
+router.get('/identificacion/:identificacion', validarJWT, getProveedorByIndentificacion);
 
-router.post('/', validarJWT,
-    /* [   validarJWT,
-        check('nombre', 'El nombre es obligatorio').not().isEmpty(),
-        check('password', 'El password es obligatorio').not().isEmpty(),
+// Ruta para crear un proveedor
+router.post('/',
+    [
+        validarJWT,
+        check('identificacion', 'La identificación es obligatoria').not().isEmpty(),
+        check('razon_social', 'La razón social es obligatoria').not().isEmpty(),
+        check('direccion', 'La dirección es obligatoria').not().isEmpty(),
+        check('telefono', 'El teléfono es obligatorio').not().isEmpty(),
         check('email', 'El email es obligatorio').isEmail(),
         validarCampos,
-    ],  */
+    ],
     createProveedor
 );
-router.delete('/:id',
-    /* [   validarJWT,
-        check('nombre', 'El nombre es obligatorio').not().isEmpty(),
-        check('password', 'El password es obligatorio').not().isEmpty(),
+
+// Ruta para actualizar un proveedor
+router.put('/:id',
+    [
+        validarJWT,
+        check('razon_social', 'La razón social es obligatoria').not().isEmpty(),
+        check('direccion', 'La dirección es obligatoria').not().isEmpty(),
+        check('telefono', 'El teléfono es obligatorio').not().isEmpty(),
         check('email', 'El email es obligatorio').isEmail(),
         validarCampos,
-    ],  */
-    deleteProveedor
+    ],
+    updateProveedor
 );
 
-router.put('/:id',
-    /* [   validarJWT,
-        check('nombre', 'El nombre es obligatorio').not().isEmpty(),
-        check('password', 'El password es obligatorio').not().isEmpty(),
-        check('email', 'El email es obligatorio').isEmail(),
+// Ruta para eliminar un proveedor
+router.delete('/:id',
+    [
+        validarJWT,
         validarCampos,
-    ],  */
-    updateProveedor
+    ],
+    deleteProveedor
 );
 
 module.exports = router;
