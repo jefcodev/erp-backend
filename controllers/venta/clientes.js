@@ -1,7 +1,7 @@
 const { validationResult } = require("express-validator");
 const { db_postgres } = require("../../database/config");
 
-// Obtener todos los clientes
+// Obtener todos los clientes con un limite
 const getClientes = async (req, res) => {
     try {
         const desde = Number(req.query.desde) || 0;
@@ -12,6 +12,30 @@ const getClientes = async (req, res) => {
             db_postgres.query(queryClientes, [desde, limit]),
             db_postgres.one(queryClientesCount),
         ]);
+        res.json({
+            ok: true,
+            clientes,
+            total: total.count
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            ok: false,
+            msg: "Error al obtener los clientes.",
+        });
+    }
+};
+
+// Obtener todos los clientes
+const getClientesAll = async (req, res) => {
+    try {
+        const queryAll = `SELECT * FROM vent_clientes ORDER BY id_cliente DESC;`;
+        const queryCount = `SELECT COUNT(*) FROM vent_clientes;`;
+        const [clientes, total] = await Promise.all([
+            db_postgres.query(queryAll),
+            db_postgres.one(queryCount),
+        ]);
+        console.log("get all clientes: ", total.count)
         res.json({
             ok: true,
             clientes,
@@ -51,8 +75,6 @@ const getClienteById = async (req, res) => {
         });
     }
 };
-
-
 
 // Obtener un cliente por su identificación
 const getClienteByIndentificacion = async (req, res) => {
@@ -196,6 +218,7 @@ const deleteCliente = async (req, res = response) => {
 
 module.exports = {
     getClientes,
+    getClientesAll,
     getClienteById,
     getClienteByIndentificacion,
     createCliente,

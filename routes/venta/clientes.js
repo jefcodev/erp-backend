@@ -7,6 +7,7 @@ const { validarCampos } = require('../../middlewares/validar-campos');
 
 const {
     getClientes,
+    getClientesAll,
     createCliente,
     getClienteById,
     deleteCliente,
@@ -18,6 +19,7 @@ const router = Router();
 
 // Rutas para obtener clientes
 router.get('/', validarJWT, getClientes);
+router.get('/all/', validarJWT, getClientesAll);
 router.get('/id/:id', validarJWT, getClienteById);
 router.get('/identificacion/:identificacion', validarJWT, getClienteByIndentificacion);
 
@@ -25,11 +27,11 @@ router.get('/identificacion/:identificacion', validarJWT, getClienteByIndentific
 router.post('/',
     [
         validarJWT,
-        check('identificacion', 'La identificación es obligatoria').not().isEmpty(),
-        check('razon_social', 'La razón social es obligatoria').not().isEmpty(),
-        check('direccion', 'La dirección es obligatoria').not().isEmpty(),
-        check('telefono', 'El teléfono es obligatorio').not().isEmpty(),
-        check('email', 'El email es obligatorio').isEmail(),
+        check('identificacion', 'La identificación es obligatoria.').not().isEmpty(),
+        check('razon_social', 'La razón social es obligatoria.').not().isEmpty(),
+        check('direccion', 'La dirección es obligatoria.').not().isEmpty(),
+        check('telefono', 'El teléfono es obligatorio.').not().isEmpty(),
+        check('email', 'El email es obligatorio.').isEmail(),
         validarCampos,
     ],
     createCliente
@@ -39,10 +41,10 @@ router.post('/',
 router.put('/:id',
     [
         validarJWT,
-        check('razon_social', 'La razón social es obligatoria').not().isEmpty(),
-        check('direccion', 'La dirección es obligatoria').not().isEmpty(),
-        check('telefono', 'El teléfono es obligatorio').not().isEmpty(),
-        check('email', 'El email es obligatorio').isEmail(),
+        check('razon_social', 'La razón social es obligatoria.').not().isEmpty(),
+        check('direccion', 'La dirección es obligatoria.').not().isEmpty(),
+        check('telefono', 'El teléfono es obligatorio.').not().isEmpty(),
+        check('email', 'El email es obligatorio.').isEmail(),
         validarCampos,
     ],
     updateCliente

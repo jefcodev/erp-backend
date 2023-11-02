@@ -1,7 +1,7 @@
 const { validationResult } = require("express-validator");
 const { db_postgres } = require("../../database/config");
 
-// Obtener todos los proveedores
+// Obtener todos los proveedores con un limite
 const getProveedores = async (req, res) => {
     try {
         const desde = Number(req.query.desde) || 0;
@@ -11,6 +11,29 @@ const getProveedores = async (req, res) => {
         const [proveedores, total] = await Promise.all([
             db_postgres.query(queryProveedores, [desde, limit]),
             db_postgres.one(queryProveedoresCount),
+        ]);
+        res.json({
+            ok: true,
+            proveedores,
+            total: total.count
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            ok: false,
+            msg: "Error al obtener los proveedores.",
+        });
+    }
+};
+
+// Obtener todos los proveedores
+const getProveedoresAll = async (req, res) => {
+    try {
+        const queryAll = `SELECT * FROM comp_proveedores ORDER BY id_proveedor DESC;`;
+        const queryCount = `SELECT COUNT(*) FROM comp_proveedores;`;
+        const [proveedores, total] = await Promise.all([
+            db_postgres.query(queryAll),
+            db_postgres.one(queryCount),
         ]);
         res.json({
             ok: true,
@@ -189,6 +212,7 @@ const deleteProveedor = async (req, res = response) => {
 
 module.exports = {
     getProveedores,
+    getProveedoresAll,
     getProveedorById,
     getProveedorByIndentificacion,
     createProveedor,

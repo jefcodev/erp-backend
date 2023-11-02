@@ -7,6 +7,7 @@ const { validarCampos } = require('../../middlewares/validar-campos');
 
 const {
     getProveedores,
+    getProveedoresAll,
     getProveedorById,
     getProveedorByIndentificacion,
     createProveedor,
@@ -18,6 +19,7 @@ const router = Router();
 
 // Rutas para obtener provedores
 router.get('/', validarJWT, getProveedores);
+router.get('/all/', validarJWT, getProveedoresAll);
 router.get('/id/:id', validarJWT, getProveedorById);
 router.get('/identificacion/:identificacion', validarJWT, getProveedorByIndentificacion);
 
@@ -25,11 +27,11 @@ router.get('/identificacion/:identificacion', validarJWT, getProveedorByIndentif
 router.post('/',
     [
         validarJWT,
-        check('identificacion', 'La identificación es obligatoria').not().isEmpty(),
-        check('razon_social', 'La razón social es obligatoria').not().isEmpty(),
-        check('direccion', 'La dirección es obligatoria').not().isEmpty(),
-        check('telefono', 'El teléfono es obligatorio').not().isEmpty(),
-        check('email', 'El email es obligatorio').isEmail(),
+        check('identificacion', 'La identificación es obligatoria.').not().isEmpty(),
+        check('razon_social', 'La razón social es obligatoria.').not().isEmpty(),
+        check('direccion', 'La dirección es obligatoria.').not().isEmpty(),
+        check('telefono', 'El teléfono es obligatorio.').not().isEmpty(),
+        check('email', 'El email es obligatorio.').isEmail(),
         validarCampos,
     ],
     createProveedor
@@ -39,10 +41,10 @@ router.post('/',
 router.put('/:id',
     [
         validarJWT,
-        check('razon_social', 'La razón social es obligatoria').not().isEmpty(),
-        check('direccion', 'La dirección es obligatoria').not().isEmpty(),
-        check('telefono', 'El teléfono es obligatorio').not().isEmpty(),
-        check('email', 'El email es obligatorio').isEmail(),
+        check('razon_social', 'La razón social es obligatoria.').not().isEmpty(),
+        check('direccion', 'La dirección es obligatoria.').not().isEmpty(),
+        check('telefono', 'El teléfono es obligatorio.').not().isEmpty(),
+        check('email', 'El email es obligatorio.').isEmail(),
         validarCampos,
     ],
     updateProveedor
