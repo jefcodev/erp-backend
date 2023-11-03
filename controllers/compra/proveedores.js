@@ -6,10 +6,44 @@ const getProveedores = async (req, res) => {
     try {
         const desde = Number(req.query.desde) || 0;
         const limit = Number(req.query.limit);
-        const queryProveedores = `SELECT * FROM comp_proveedores ORDER BY id_proveedor DESC OFFSET $1 LIMIT $2;`;
+        const query = `SELECT * FROM comp_proveedores ORDER BY id_proveedor DESC OFFSET $1 LIMIT $2;`;
+        const queryCount = `SELECT COUNT(*) FROM comp_proveedores;`;
+        const [proveedores, total] = await Promise.all([
+            db_postgres.query(query, [desde, limit]),
+            db_postgres.one(queryCount),
+        ]);
+        res.json({
+            ok: true,
+            proveedores,
+            total: total.count
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            ok: false,
+            msg: "Error al obtener los proveedores.",
+        });
+    }
+};
+
+// Obtener todos los proveedores con un limite y busqueda
+const getProveedoresSearch = async (req, res) => {
+    try {
+        const search = req.query.search || ''; // Obtener la cadena de búsqueda desde la URL
+        const desde = Number(req.query.desde) || 0;
+        const limit = Number(req.query.limit);
+
+        const queryProveedores = `
+        SELECT * FROM comp_proveedores
+        WHERE identificacion ILIKE '%' || $1 || '%' or
+            razon_social ILIKE '%' || $1 || '%' OR
+            direccion ILIKE '%' || $1 || '%'
+        ORDER BY id_proveedor DESC
+        OFFSET $2 LIMIT $3;
+        `;
         const queryProveedoresCount = `SELECT COUNT(*) FROM comp_proveedores;`;
         const [proveedores, total] = await Promise.all([
-            db_postgres.query(queryProveedores, [desde, limit]),
+            db_postgres.query(queryProveedores, [`%${search}%`, desde, limit]),
             db_postgres.one(queryProveedoresCount),
         ]);
         res.json({
@@ -212,6 +246,7 @@ const deleteProveedor = async (req, res = response) => {
 
 module.exports = {
     getProveedores,
+    getProveedoresSearch,
     getProveedoresAll,
     getProveedorById,
     getProveedorByIndentificacion,

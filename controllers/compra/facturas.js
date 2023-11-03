@@ -1,16 +1,44 @@
-const { response } = require("express");
 const { validationResult } = require("express-validator");
-const { generarJWT } = require("../../helpers/jwt");
 const { db_postgres } = require("../../database/config");
 
-// Obtener todos los facturas
+// Obtener todos los facturas con un limite
 const getFacturas = async (req, res) => {
     try {
-        const facturas = await db_postgres.query("SELECT * FROM comp_facturas_compras ORDER BY id_factura_compra DESC");
-
+        const desde = Number(req.query.desde) || 0;
+        const limit = Number(req.query.limit);
+        const query = `SELECT * FROM comp_facturas_compras ORDER BY id_factura_compra DESC OFFSET $1 LIMIT $2;`;
+        const queryCount = `SELECT COUNT(*) FROM comp_facturas_compras;`;
+        const [facturas, total] = await Promise.all([
+            db_postgres.query(query, [desde, limit]),
+            db_postgres.one(queryCount),
+        ]);
         res.json({
             ok: true,
             facturas,
+            total: total.count
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            ok: false,
+            msg: "Error al obtener las facturasgit.",
+        });
+    }
+};
+
+// Obtener todas las facturas
+const getFacturasAll = async (req, res) => {
+    try {
+        const queryAll = `SELECT * FROM comp_facturas_compras ORDER BY id_factura_compra DESC;`;
+        const queryCount = `SELECT COUNT(*) FROM comp_facturas_compras;`;
+        const [facturas, total] = await Promise.all([
+            db_postgres.query(queryAll),
+            db_postgres.one(queryCount),
+        ]);
+        res.json({
+            ok: true,
+            facturas,
+            total: total.count
         });
     } catch (error) {
         console.error(error);
@@ -20,6 +48,7 @@ const getFacturas = async (req, res) => {
         });
     }
 };
+
 
 // Obtener un factura por su ID
 const getFacturaById = async (req, res) => {
@@ -189,6 +218,7 @@ const deleteFactura = async (req, res = response) => {
 module.exports = {
     getFacturas,
     getFacturaById,
+    getFacturasAll,
     createFactura,
     updateFactura,
     deleteFactura,

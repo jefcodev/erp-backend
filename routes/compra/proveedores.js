@@ -7,6 +7,7 @@ const { validarCampos } = require('../../middlewares/validar-campos');
 
 const {
     getProveedores,
+    getProveedoresSearch,
     getProveedoresAll,
     getProveedorById,
     getProveedorByIndentificacion,
@@ -19,7 +20,8 @@ const router = Router();
 
 // Rutas para obtener provedores
 router.get('/', validarJWT, getProveedores);
-router.get('/all/', validarJWT, getProveedoresAll);
+router.get('/search/', validarJWT, getProveedoresSearch);
+router.get('/all/', getProveedoresAll);
 router.get('/id/:id', validarJWT, getProveedorById);
 router.get('/identificacion/:identificacion', validarJWT, getProveedorByIndentificacion);
 
@@ -51,11 +53,7 @@ router.put('/:id',
 );
 
 // Ruta para eliminar un proveedor
-router.delete('/:id',
-    [
-        validarJWT,
-        validarCampos,
-    ],
+router.delete('/:id', [validarJWT],
     deleteProveedor
 );
 
