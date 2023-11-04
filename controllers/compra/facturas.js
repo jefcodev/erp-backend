@@ -6,16 +6,16 @@ const getFacturas = async (req, res) => {
     try {
         const desde = Number(req.query.desde) || 0;
         const limit = Number(req.query.limit);
-        const query = `SELECT * FROM comp_facturas_compras ORDER BY id_factura_compra DESC OFFSET $1 LIMIT $2;`;
-        const queryCount = `SELECT COUNT(*) FROM comp_facturas_compras;`;
-        const [facturas, total] = await Promise.all([
-            db_postgres.query(query, [desde, limit]),
-            db_postgres.one(queryCount),
+        const queryFacturas = `SELECT * FROM comp_facturas_compras ORDER BY id_factura_compra DESC OFFSET $1 LIMIT $2;`;
+        const queryTotalFacturas = `SELECT COUNT(*) FROM comp_facturas_compras;`;
+        const [facturas, totalFacturas] = await Promise.all([
+            db_postgres.query(queryFacturas, [desde, limit]),
+            db_postgres.one(queryTotalFacturas),
         ]);
         res.json({
             ok: true,
             facturas,
-            total: total.count
+            totalFacturas: totalFacturas.count
         });
     } catch (error) {
         console.error(error);
@@ -29,16 +29,30 @@ const getFacturas = async (req, res) => {
 // Obtener todas las facturas
 const getFacturasAll = async (req, res) => {
     try {
-        const queryAll = `SELECT * FROM comp_facturas_compras ORDER BY id_factura_compra DESC;`;
-        const queryCount = `SELECT COUNT(*) FROM comp_facturas_compras;`;
-        const [facturas, total] = await Promise.all([
-            db_postgres.query(queryAll),
-            db_postgres.one(queryCount),
+        const queryFacturas = `SELECT * FROM comp_facturas_compras ORDER BY id_factura_compra DESC;`;
+        const queryTotalFacturas = `SELECT COUNT(*) FROM comp_facturas_compras;`;
+        const queryTotalFacturasPendientes = `SELECT COUNT(*) FROM comp_facturas_compras WHERE estado_pago = 'PENDIENTE';`;
+
+        const querySumaAbono = `SELECT SUM(abono) FROM comp_facturas_compras;`;
+        const querySumaImporteTotal = `SELECT SUM(importe_total) FROM comp_facturas_compras;`;
+
+        const [facturas, totalFacturas, totalFacturasPendientes, sumaAbono, sumaImporteTotal] = await Promise.all([
+            db_postgres.query(queryFacturas),
+            db_postgres.one(queryTotalFacturas),
+            db_postgres.one(queryTotalFacturasPendientes),
+            db_postgres.one(querySumaAbono),
+            db_postgres.one(querySumaImporteTotal),
         ]);
+
+        const sumaSaldo = sumaImporteTotal.sum - sumaAbono.sum;
+
         res.json({
             ok: true,
             facturas,
-            total: total.count
+            totalFacturas: totalFacturas.count,
+            totalFacturasPendientes: totalFacturasPendientes.count,
+            sumaSaldo,
+            sumaImporteTotal: sumaImporteTotal.sum,
         });
     } catch (error) {
         console.error(error);
@@ -98,7 +112,7 @@ const createFactura = async (req, res = response) => {
 
     let estado_pago = "PENDIENTE";
     if (importe_total == abono) {
-        estado_pago = "PAGADO";
+        estado_pago = "PAGADA";
     }
     console.log("LLEGA FECHA: ", fecha_emision)
     console.log("LLEGA FECHA: ", fecha_vencimiento)
@@ -132,8 +146,6 @@ const updateFactura = async (req, res = response) => {
     try {
         const facturaExists = await db_postgres.oneOrNone("SELECT * FROM comp_facturas_compras WHERE id_factura_compra = $1", [id_factura_compra]);
 
-        const abono_sumado = parseFloat(abono) + parseFloat(facturaExists.abono)
-
         if (!facturaExists) {
             return res.status(400).json({
                 ok: false,
@@ -141,9 +153,19 @@ const updateFactura = async (req, res = response) => {
             });
         }
 
+        const abono1 = parseFloat(abono);
+        const abono2 = parseFloat(facturaExists.abono)
+
+        let abono_sumado = 0;
+        if (!isNaN(abono1) && !isNaN(abono2)) {
+            abono_sumado = abono1 + abono2;
+        } else {
+            abono_sumado = abono1;
+        }
+
         let estado_pago = "";
         if (facturaExists.importe_total == abono_sumado) {
-            estado_pago = "PAGADO";
+            estado_pago = "PAGADA";
         } else {
             estado_pago = "PENDIENTE";
         }
