@@ -2,14 +2,14 @@ const pgPromise = require("pg-promise");
 const config = {
 
 
-    /* Local
+    /* ///Local
     host: "localhost",
     port: "5432",
     database: "inveservice",
     user: "postgres",
     password: "2023",  
+    
     */
-     
     host: 'systemcode.ec',
     port: '5432',
     database: 'inveservice',

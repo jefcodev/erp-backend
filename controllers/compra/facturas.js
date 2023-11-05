@@ -114,8 +114,8 @@ const createFactura = async (req, res = response) => {
     if (importe_total == abono) {
         estado_pago = "PAGADA";
     }
-    console.log("LLEGA FECHA: ", fecha_emision)
-    console.log("LLEGA FECHA: ", fecha_vencimiento)
+    console.log("LLEGA FECHA EMISION: ", fecha_emision)
+    console.log("LLEGA FECHA VENCIMIENTO: ", fecha_vencimiento)
 
     try {
         const factura = await db_postgres.one(
@@ -127,14 +127,14 @@ const createFactura = async (req, res = response) => {
 
         res.json({
             ok: true,
-            msg: "Factura creado correctamente.",
+            msg: "Factura creada correctamente.",
             factura,
         });
     } catch (error) {
-        console.log(error);
+        console.log("MI error", error);
         res.status(501).json({
             ok: false,
-            msg: "Error al crear el factura. Por favor, inténtalo de nuevo.",
+            msg: "Error al crear la factura. Por favor, inténtalo de nuevo.",
         });
     }
 };
@@ -142,7 +142,8 @@ const createFactura = async (req, res = response) => {
 // Actualizar un factura
 const updateFactura = async (req, res = response) => {
     const id_factura_compra = req.params.id;
-    const { abono } = req.body;
+    const { id_forma_pago, fecha_vencimiento, abono, observacion } = req.body;
+
     try {
         const facturaExists = await db_postgres.oneOrNone("SELECT * FROM comp_facturas_compras WHERE id_factura_compra = $1", [id_factura_compra]);
 
@@ -153,29 +154,50 @@ const updateFactura = async (req, res = response) => {
             });
         }
 
-        const abono1 = parseFloat(abono);
-        const abono2 = parseFloat(facturaExists.abono)
+        // solo para actualizar la fecha vencimiento si no hay abono
+        console.log("llega fecha vencimiento: ", fecha_vencimiento)
+
+        const abono1 = parseFloat(abono)|| 0;
+        const abono2 = parseFloat(facturaExists.abono) || 0;
+        console.log("llega abono1: ", abono1)
+        console.log("llega abono2: ", abono2)
+        console.log("llega observación: ", observacion)
 
         let abono_sumado = 0;
-        if (!isNaN(abono1) && !isNaN(abono2)) {
+        let facturaUpdate;
+
+        // solo si llega un abono mayor a cero y una obervacion se hace el pago
+        if (!isNaN(abono1) && (abono1 > 0) && (observacion.trim() !== "")) {
+            //if ((!isNaN(abono1) && !isNaN(abono2)) && (abono1 > 0) && (observacion.trim() !== "")) {
             abono_sumado = abono1 + abono2;
+            console.log("INGRESAMOS A HACER EL PAGO")
+
+            let estado_pago = "";
+            if (facturaExists.importe_total == abono_sumado) {
+                estado_pago = "PAGADA";
+            } else {
+                estado_pago = "PENDIENTE";
+            }
+
+            facturaUpdate = await db_postgres.one(
+                "UPDATE comp_facturas_compras SET fecha_vencimiento = $1, estado_pago = $2, abono = $3 WHERE id_factura_compra = $4 RETURNING *",
+                [fecha_vencimiento, estado_pago, abono_sumado, id_factura_compra]
+            );
+
+            const pago = await db_postgres.one(
+                "INSERT INTO cont_pagos (fecha_pago, id_factura_compra, id_forma_pago, valor, observacion, estado) VALUES (CURRENT_DATE, $1, $2, $3, $4, $5) RETURNING *",
+                [id_factura_compra, id_forma_pago, abono, observacion, true]
+
+            );
         } else {
-            abono_sumado = abono1;
+            console.log("Solo actualizamos la fecha")
+            facturaUpdate = await db_postgres.one(
+                "UPDATE comp_facturas_compras SET fecha_vencimiento = $1 WHERE id_factura_compra = $2 RETURNING *",
+                [fecha_vencimiento, id_factura_compra]
+            );
         }
 
-        let estado_pago = "";
-        if (facturaExists.importe_total == abono_sumado) {
-            estado_pago = "PAGADA";
-        } else {
-            estado_pago = "PENDIENTE";
-        }
-
-        const facturaUpdate = await db_postgres.one(
-            "UPDATE comp_facturas_compras SET estado_pago = $1, abono = $2 WHERE id_factura_compra = $3 RETURNING *",
-            [estado_pago, abono_sumado, id_factura_compra]
-        );
         /**Logica adicional para hacer automaticamente los pagos en asientos */
-
         const asiento = await db_postgres.one(
             //"INSERT INTO cont_asientos (fecha, referencia, documento, observacion, estado) VALUES (CURRENT_TIMESTAMP, $1, $2, $3, $4) RETURNING *",
             "INSERT INTO cont_asientos (fecha, referencia, documento, observacion, estado) VALUES (CURRENT_DATE, $1, $2, $3, $4) RETURNING *",
@@ -194,6 +216,7 @@ const updateFactura = async (req, res = response) => {
             [asiento.id_asiento, 38, "descripcion", facturaExists.codigo, abono, 0.00]
         );
         /**FIN */
+
 
         res.json({
             ok: true,
