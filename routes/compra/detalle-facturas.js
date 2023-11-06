@@ -5,7 +5,7 @@ const { Router } = require('express');
 const { check } = require('express-validator');
 const { validarCampos } = require('../../middlewares/validar-campos');
 
-const { getDetalleFacturas, getDetalleFacturaById, getDetalleFacturasByFactura, createDetalleFactura, updateDetalleFactura } = require('../../controllers/compra/detalle-facturas');
+const { getDetalleFacturas, getDetalleFacturaById, getDetallesFacturaByIdFactura, createDetalleFactura, updateDetalleFactura } = require('../../controllers/compra/detalle-facturas');
 const { validarJWT } = require('../../middlewares/validar-jwt');
 
 const router = Router();
@@ -15,7 +15,7 @@ router.get('/', getDetalleFacturas);
 
 //router.get('/:id', getDetalleFacturaById);
 router.get('/id/:id', getDetalleFacturaById);
-router.get('/factura/:factura', getDetalleFacturasByFactura);
+router.get('/factura/:factura', getDetallesFacturaByIdFactura);
 
 router.post('/', 
     /* [   validarJWT,

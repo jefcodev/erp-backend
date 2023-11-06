@@ -52,7 +52,7 @@ const getDetalleFacturaById = async (req, res) => {
 
 
 // Obtener un detalle_factura por su ID_FACTURA
-const getDetalleFacturasByFactura = async (req, res) => {
+const getDetallesFacturaByIdFactura = async (req, res) => {
     try {
 
         const id_factura_compra = req.params.factura;
@@ -64,12 +64,12 @@ const getDetalleFacturasByFactura = async (req, res) => {
             });
         }
 
-        const detalle_facturas = await db_postgres.query(`
+        const detalles_factura = await db_postgres.query(`
             SELECT * FROM comp_detalle_facturas_compras
             WHERE id_factura_compra = $1
         `, [id_factura_compra]);
 
-        if (!detalle_facturas) {
+        if (!detalles_factura) {
             return res.status(404).json({
                 ok: false,
                 msg: "Detalles de Factura no encontrado.",
@@ -77,7 +77,7 @@ const getDetalleFacturasByFactura = async (req, res) => {
         }
         res.json({
             ok: true,
-            detalle_facturas,
+            detalles_factura,
         });
     } catch (error) {
         console.error(error);
@@ -158,7 +158,7 @@ const updateDetalleFactura = async (req, res = response) => {
 module.exports = {
     getDetalleFacturas,
     getDetalleFacturaById,
-    getDetalleFacturasByFactura,
+    getDetallesFacturaByIdFactura,
     createDetalleFactura,
     updateDetalleFactura,
 };
