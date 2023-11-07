@@ -3,14 +3,58 @@ const { validationResult } = require("express-validator");
 const { generarJWT } = require("../../helpers/jwt");
 const { db_postgres } = require("../../database/config");
 
-// Obtener todos los facturas
+// Obtener todos los facturas con un limite
 const getFacturas = async (req, res) => {
     try {
-        const facturas = await db_postgres.query("SELECT * FROM vent_facturas_ventas ORDER BY id_factura_venta ASC");
+        const desde = Number(req.query.desde) || 0;
+        const limit = Number(req.query.limit);
+        const queryFacturas = `SELECT * FROM vent_facturas_ventas ORDER BY id_factura_venta DESC OFFSET $1 LIMIT $2;`;
+        const queryTotalFacturas = `SELECT COUNT(*) FROM vent_facturas_ventas;`;
+        const [facturas, totalFacturas] = await Promise.all([
+            db_postgres.query(queryFacturas, [desde, limit]),
+            db_postgres.one(queryTotalFacturas),
+        ]);
+        res.json({
+            ok: true,
+            facturas,
+            totalFacturas: totalFacturas.count
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            ok: false,
+            msg: "Error al obtener las facturasgit.",
+        });
+    }
+};
+
+// Obtener todas las facturas
+const getFacturasAll = async (req, res) => {
+    try {
+        const queryFacturas = `SELECT * FROM vent_facturas_ventas ORDER BY id_factura_venta DESC;`;
+        const queryTotalFacturas = `SELECT COUNT(*) FROM vent_facturas_ventas;`;
+        const queryTotalFacturasPendientes = `SELECT COUNT(*) FROM vent_facturas_ventas WHERE estado_pago = 'PENDIENTE';`;
+
+        const querySumaAbono = `SELECT SUM(abono) FROM vent_facturas_ventas;`;
+        const querySumaImporteTotal = `SELECT SUM(importe_total) FROM vent_facturas_ventas;`;
+
+        const [facturas, totalFacturas, totalFacturasPendientes, sumaAbono, sumaImporteTotal] = await Promise.all([
+            db_postgres.query(queryFacturas),
+            db_postgres.one(queryTotalFacturas),
+            db_postgres.one(queryTotalFacturasPendientes),
+            db_postgres.one(querySumaAbono),
+            db_postgres.one(querySumaImporteTotal),
+        ]);
+
+        const sumaSaldo = sumaImporteTotal.sum - sumaAbono.sum;
 
         res.json({
             ok: true,
             facturas,
+            totalFacturas: totalFacturas.count,
+            totalFacturasPendientes: totalFacturasPendientes.count,
+            sumaSaldo,
+            sumaImporteTotal: sumaImporteTotal.sum,
         });
     } catch (error) {
         console.error(error);
@@ -56,8 +100,7 @@ const getFacturaById = async (req, res) => {
 
 // Crear nueva factura
 const createFactura = async (req, res = response) => {
-    //const { id_cliente, id_forma_pago, id_asiento, codigo, fecha_emision, fecha_vencimiento, estado_pago, subtotal_sin_impuestos, total_descuento, iva, valor_total, abono } = req.body;
-    const { id_cliente, id_forma_pago, id_asiento, codigo, fecha_emision, fecha_vencimiento, subtotal_sin_impuestos, total_descuento, iva, valor_total, abono } = req.body;
+    const { id_proveedor, id_asiento, id_info_tributaria, clave_acceso, codigo, fecha_emision, fecha_vencimiento, total_sin_impuesto, total_descuento, valor, propina, importe_total, id_forma_pago, abono, observacion } = req.body;
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({
@@ -66,29 +109,46 @@ const createFactura = async (req, res = response) => {
             msg: "Datos no válidos. Por favor, verifica los campos.",
         });
     }
-
-    let estado_pago = "PENDIENTE";
-    if (valor_total == abono) {
-        estado_pago = "PAGADO";
-    }
-
     try {
-        const factura = await db_postgres.one(
-            "INSERT INTO public.vent_facturas_ventas (id_cliente, id_forma_pago, id_asiento, codigo, fecha_emision, fecha_vencimiento, estado_pago, subtotal_sin_impuestos, total_descuento, iva, valor_total, abono, estado) " +
-            "VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *",
-            [id_cliente, id_forma_pago, id_asiento, codigo, fecha_emision, fecha_vencimiento, estado_pago, subtotal_sin_impuestos, total_descuento, iva, valor_total, abono, true]
-        );
+        let factura;
+        let estado_pago = "PENDIENTE";
 
+        console.log('abono: ', abono)
+        console.log('observacion: ', observacion)
+        console.log('id forma de pago: ', id_forma_pago)
+        // Solo si llega un abono mayor a cero, hay obervación y forma de pago se hace el pago
+        if (!isNaN(abono) && (abono > 0) && (observacion.trim() !== "") && !isNaN(id_forma_pago)) {
+            console.log("PAGAR")
+            if (importe_total == abono) {
+                estado_pago = "PAGADA";
+            }
+            factura = await db_postgres.one(
+                "INSERT INTO public.vent_facturas_ventas (id_proveedor, id_asiento, id_info_tributaria, clave_acceso, codigo, fecha_emision, fecha_vencimiento, estado_pago, total_sin_impuesto, total_descuento, valor, propina, importe_total, abono, estado) " +
+                "VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *",
+                [id_proveedor, id_asiento, id_info_tributaria, clave_acceso, codigo, fecha_emision, fecha_vencimiento, estado_pago, total_sin_impuesto, total_descuento, valor, propina, importe_total, abono, true]
+            );
+            const id_factura_venta = factura.id_factura_venta
+            const pago = await db_postgres.one(
+                "INSERT INTO cont_pagos (fecha_pago, id_forma_pago, id_factura_venta, abono, observacion, estado) VALUES (CURRENT_DATE, $1, $2, $3, $4, $5) RETURNING *",
+                [id_forma_pago, id_factura_venta, abono, observacion, true]
+            );
+        } else {
+            console.log("SOLO INGRESAR LA FACTURA")
+            factura = await db_postgres.one(
+                "INSERT INTO public.vent_facturas_ventas (id_proveedor, id_asiento, id_info_tributaria, clave_acceso, codigo, fecha_emision, fecha_vencimiento, estado_pago, total_sin_impuesto, total_descuento, valor, propina, importe_total, estado) " +
+                "VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *",
+                [id_proveedor, id_asiento, id_info_tributaria, clave_acceso, codigo, fecha_emision, fecha_vencimiento, estado_pago, total_sin_impuesto, total_descuento, valor, propina, importe_total, true]
+            );
+        }
         res.json({
             ok: true,
-            msg: "Factura creado correctamente.",
+            msg: "Factura creada correctamente.",
             factura,
         });
     } catch (error) {
-        console.log(error);
         res.status(501).json({
             ok: false,
-            msg: "Error al crear el factura. Por favor, inténtalo de nuevo.",
+            msg: "Error al crear la factura. Por favor, inténtalo de nuevo.",
         });
     }
 };
@@ -96,11 +156,10 @@ const createFactura = async (req, res = response) => {
 // Actualizar un factura
 const updateFactura = async (req, res = response) => {
     const id_factura_venta = req.params.id;
-    const { estado_pago, abono } = req.body;
+    const { fecha_vencimiento, id_forma_pago, abono, observacion } = req.body;
+
     try {
         const facturaExists = await db_postgres.oneOrNone("SELECT * FROM vent_facturas_ventas WHERE id_factura_venta = $1", [id_factura_venta]);
-
-        const abono_sumado = parseFloat(abono) + parseFloat(facturaExists.abono)
 
         if (!facturaExists) {
             return res.status(400).json({
@@ -109,23 +168,52 @@ const updateFactura = async (req, res = response) => {
             });
         }
 
-        let estado_pago = "";
-        if (facturaExists.valor_total == abono_sumado) {
-            estado_pago = "PAGADO";
-        }else{
-            estado_pago = "PENDIENTE";
+        // solo para actualizar la fecha vencimiento si no hay abono
+        console.log("llega fecha vencimiento: ", fecha_vencimiento)
+
+        const abono1 = parseFloat(abono) || 0;
+        const abono2 = parseFloat(facturaExists.abono) || 0;
+        console.log("llega abono1: ", abono1)
+        console.log("llega abono2: ", abono2)
+        console.log("llega observación: ", observacion)
+
+        let abono_sumado = 0;
+        let facturaUpdate;
+
+        // Solo si llega un abono mayor a cero, hay obervación y forma de pago se hace el pago
+        if (!isNaN(abono1) && (abono1 > 0) && (observacion.trim() !== "") && !isNaN(id_forma_pago)) {
+            //if ((!isNaN(abono1) && !isNaN(abono2)) && (abono1 > 0) && (observacion.trim() !== "")) {
+            abono_sumado = abono1 + abono2;
+            console.log("PAGAR")
+
+            let estado_pago = "PENDIENTE";
+            if (facturaExists.importe_total == abono_sumado) {
+                estado_pago = "PAGADA";
+            }
+
+            facturaUpdate = await db_postgres.one(
+                "UPDATE vent_facturas_ventas SET fecha_vencimiento = $1, estado_pago = $2, abono = $3 WHERE id_factura_venta = $4 RETURNING *",
+                [fecha_vencimiento, estado_pago, abono_sumado, id_factura_venta]
+            );
+
+            const pago = await db_postgres.one(
+                "INSERT INTO cont_pagos (fecha_pago, id_forma_pago, id_factura_venta, abono, observacion, estado) VALUES (CURRENT_DATE, $1, $2, $3, $4, $5) RETURNING *",
+                [id_forma_pago, id_factura_venta, abono, observacion, true]
+
+            );
+        } else {
+            console.log("SOLO ACTUALIZAR FECHA")
+            facturaUpdate = await db_postgres.one(
+                "UPDATE vent_facturas_ventas SET fecha_vencimiento = $1 WHERE id_factura_venta = $2 RETURNING *",
+                [fecha_vencimiento, id_factura_venta]
+            );
         }
 
-        const facturaUpdate = await db_postgres.one(
-            "UPDATE vent_facturas_ventas SET estado_pago = $1, abono = $2 WHERE id_factura_venta = $3 RETURNING *",
-            [estado_pago, abono_sumado, id_factura_venta]
-        );
         /**Logica adicional para hacer automaticamente los pagos en asientos */
-
         const asiento = await db_postgres.one(
             //"INSERT INTO cont_asientos (fecha, referencia, documento, observacion, estado) VALUES (CURRENT_TIMESTAMP, $1, $2, $3, $4) RETURNING *",
             "INSERT INTO cont_asientos (fecha, referencia, documento, observacion, estado) VALUES (CURRENT_DATE, $1, $2, $3, $4) RETURNING *",
-            ["Venta (Gasto)", facturaExists.codigo, "Generado por el sistema", true]
+            ["Venta ", facturaExists.codigo, "Generado por el sistema", true]
         );
 
         // ACTIVO - CTA # 8 CAJA CHICA MATRIZ
@@ -140,6 +228,7 @@ const updateFactura = async (req, res = response) => {
             [asiento.id_asiento, 38, "descripcion", facturaExists.codigo, abono, 0.00]
         );
         /**FIN */
+
 
         res.json({
             ok: true,
@@ -168,7 +257,7 @@ const deleteFactura = async (req, res = response) => {
         }
         const estado_pago = "ANULADA";
         const facturaDelete = await db_postgres.query("UPDATE vent_facturas_ventas SET estado = $1, estado_pago =$2 WHERE id_factura_venta = $3 RETURNING *", [false, estado_pago, id_factura_venta]);
-        
+
         /**Logica adicional para hacer automaticamente los asientos */
 
         const asiento = await db_postgres.one(
@@ -189,8 +278,8 @@ const deleteFactura = async (req, res = response) => {
             [asiento.id_asiento, 38, "descripcion", facturaExists.codigo, abono, 0.00]
         );
         /**FIN */
-        
-        
+
+
         res.json({
             ok: true,
             msg: "Factura borrado correctamente.",
@@ -208,6 +297,7 @@ const deleteFactura = async (req, res = response) => {
 module.exports = {
     getFacturas,
     getFacturaById,
+    getFacturasAll,
     createFactura,
     updateFactura,
     deleteFactura,

@@ -3,45 +3,38 @@
 */
 const { Router } = require('express');
 const { check } = require('express-validator');
+const { validarJWT } = require('../../middlewares/validar-jwt');
 const { validarCampos } = require('../../middlewares/validar-campos');
 
-const { getFacturas, createFactura, getFacturaById, deleteFactura, updateFactura } = require('../../controllers/venta/facturas');
-const { validarJWT } = require('../../middlewares/validar-jwt');
+const {
+    getFacturas,
+    getFacturasAll,
+    createFactura,
+    getFacturaById,
+    deleteFactura,
+    updateFactura
+} = require('../../controllers/venta/facturas');
 
 const router = Router();
 
-router.get('/', getFacturas);
-//router.get('/', validarJWT, getFacturas);
+// Rutas para obtener facturas
+router.get('/', validarJWT, getFacturas);
+router.get('/all/', validarJWT, getFacturasAll);
+router.get('/:id', validarJWT, getFacturaById);
 
-router.get('/:id', getFacturaById);
-
-router.post('/', 
-    /* [   validarJWT,
-        check('nombre', 'El nombre es obligatorio').not().isEmpty(),
-        check('password', 'El password es obligatorio').not().isEmpty(),
-        check('email', 'El email es obligatorio').isEmail(),
-        validarCampos,
-    ],  */
+// Ruta para crear una factura
+router.post('/', [validarJWT],
     createFactura
 );
-router.delete('/:id',
-    /* [   validarJWT,
-        check('nombre', 'El nombre es obligatorio').not().isEmpty(),
-        check('password', 'El password es obligatorio').not().isEmpty(),
-        check('email', 'El email es obligatorio').isEmail(),
-        validarCampos,
-    ],  */
-    deleteFactura
+
+// Ruta para actualizar una factura
+router.put('/:id', [validarJWT],
+    updateFactura
 );
 
-router.put('/:id',
-    /* [   validarJWT,
-        check('nombre', 'El nombre es obligatorio').not().isEmpty(),
-        check('password', 'El password es obligatorio').not().isEmpty(),
-        check('email', 'El email es obligatorio').isEmail(),
-        validarCampos,
-    ],  */
-    updateFactura
+// Ruta para eliminar una factura
+router.delete('/:id', [validarJWT],
+    deleteFactura
 );
 
 module.exports = router;
