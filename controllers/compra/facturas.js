@@ -21,7 +21,7 @@ const getFacturas = async (req, res) => {
         console.error(error);
         res.status(500).json({
             ok: false,
-            msg: "Error al obtener las facturasgit.",
+            msg: "Error al obtener las facturas.",
         });
     }
 };
@@ -86,7 +86,6 @@ const getFacturaById = async (req, res) => {
             ok: true,
             factura,
             saldo,
-
         });
     } catch (error) {
         console.error(error);
@@ -132,7 +131,7 @@ const createFactura = async (req, res = response) => {
                 [id_forma_pago, id_factura_compra, abono, observacion, true]
             );
         } else {
-            console.log("SOLO INGRESAR LA FACTURA")
+            console.log("SOLO INGRESAR LA FACTURA COMPRA")
             factura = await db_postgres.one(
                 "INSERT INTO public.comp_facturas_compras (id_proveedor, id_asiento, id_info_tributaria, clave_acceso, codigo, fecha_emision, fecha_vencimiento, estado_pago, total_sin_impuesto, total_descuento, valor, propina, importe_total, estado) " +
                 "VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *",
@@ -144,6 +143,7 @@ const createFactura = async (req, res = response) => {
             msg: "Factura creada correctamente.",
             factura,
         });
+        console.log('crear factura compra: ', factura)
     } catch (error) {
         res.status(501).json({
             ok: false,
@@ -152,7 +152,7 @@ const createFactura = async (req, res = response) => {
     }
 };
 
-// Actualizar un factura
+// Actualizar una factura
 const updateFactura = async (req, res = response) => {
     const id_factura_compra = req.params.id;
     const { fecha_vencimiento, id_forma_pago, abono, observacion } = req.body;
@@ -243,7 +243,7 @@ const updateFactura = async (req, res = response) => {
     }
 };
 
-// Eliminar un factura
+// Eliminar una factura
 const deleteFactura = async (req, res = response) => {
     const id_factura_compra = req.params.id;
     try {

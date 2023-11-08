@@ -8,11 +8,11 @@ const { validarCampos } = require('../../middlewares/validar-campos');
 const {
     getClientes,
     getClientesAll,
-    createCliente,
     getClienteById,
+    getClienteByIndentificacion,
+    createCliente,
     deleteCliente,
     updateCliente,
-    getClienteByIndentificacion,
 } = require('../../controllers/venta/clientes');
 
 const router = Router();
@@ -51,11 +51,7 @@ router.put('/:id',
 );
 
 // Ruta para eliminar un cliente
-router.delete('/:id',
-    [
-        validarJWT,
-        validarCampos,
-    ],
+router.delete('/:id', [validarJWT],
     deleteCliente
 );
 

@@ -90,6 +90,8 @@ const getDetallesFacturaByIdFactura = async (req, res) => {
 
 // Crear un nuevo detalle_factura
 const createDetalleFactura = async (req, res = response) => {
+    
+    console.log('CREAR DETALLE COMPRA');
     const { detalles } = req.body; // Obtener el arreglo de detalles desde el cuerpo de la solicitud
     try {
         const promises = detalles.map(async (detalle) => {
@@ -152,8 +154,6 @@ const updateDetalleFactura = async (req, res = response) => {
         });
     }
 };
-
-
 
 module.exports = {
     getDetalleFacturas,

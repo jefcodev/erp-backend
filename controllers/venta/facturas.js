@@ -1,6 +1,4 @@
-const { response } = require("express");
 const { validationResult } = require("express-validator");
-const { generarJWT } = require("../../helpers/jwt");
 const { db_postgres } = require("../../database/config");
 
 // Obtener todos los facturas con un limite
@@ -23,7 +21,7 @@ const getFacturas = async (req, res) => {
         console.error(error);
         res.status(500).json({
             ok: false,
-            msg: "Error al obtener las facturasgit.",
+            msg: "Error al obtener las facturas.",
         });
     }
 };
@@ -79,15 +77,14 @@ const getFacturaById = async (req, res) => {
             });
         }
 
-        const valor_total = factura[0].valor_total;
+        const importe_total = factura[0].importe_total;
         const abono = factura[0].abono;
-        const saldo = valor_total - abono;
+        const saldo = importe_total - abono;
 
         res.json({
             ok: true,
             factura,
             saldo,
-
         });
     } catch (error) {
         console.error(error);
@@ -100,7 +97,7 @@ const getFacturaById = async (req, res) => {
 
 // Crear nueva factura
 const createFactura = async (req, res = response) => {
-    const { id_proveedor, id_asiento, id_info_tributaria, clave_acceso, codigo, fecha_emision, fecha_vencimiento, total_sin_impuesto, total_descuento, valor, propina, importe_total, id_forma_pago, abono, observacion } = req.body;
+    const { id_cliente, id_asiento, id_info_tributaria, clave_acceso, codigo, fecha_emision, fecha_vencimiento, total_sin_impuesto, total_descuento, valor, propina, importe_total, id_forma_pago, abono, observacion } = req.body;
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({
@@ -123,9 +120,9 @@ const createFactura = async (req, res = response) => {
                 estado_pago = "PAGADA";
             }
             factura = await db_postgres.one(
-                "INSERT INTO public.vent_facturas_ventas (id_proveedor, id_asiento, id_info_tributaria, clave_acceso, codigo, fecha_emision, fecha_vencimiento, estado_pago, total_sin_impuesto, total_descuento, valor, propina, importe_total, abono, estado) " +
+                "INSERT INTO public.vent_facturas_ventas (id_cliente, id_asiento, id_info_tributaria, clave_acceso, codigo, fecha_emision, fecha_vencimiento, estado_pago, total_sin_impuesto, total_descuento, valor, propina, importe_total, abono, estado) " +
                 "VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *",
-                [id_proveedor, id_asiento, id_info_tributaria, clave_acceso, codigo, fecha_emision, fecha_vencimiento, estado_pago, total_sin_impuesto, total_descuento, valor, propina, importe_total, abono, true]
+                [id_cliente, id_asiento, id_info_tributaria, clave_acceso, codigo, fecha_emision, fecha_vencimiento, estado_pago, total_sin_impuesto, total_descuento, valor, propina, importe_total, abono, true]
             );
             const id_factura_venta = factura.id_factura_venta
             const pago = await db_postgres.one(
@@ -133,11 +130,11 @@ const createFactura = async (req, res = response) => {
                 [id_forma_pago, id_factura_venta, abono, observacion, true]
             );
         } else {
-            console.log("SOLO INGRESAR LA FACTURA")
+            console.log("SOLO INGRESAR LA FACTURA VENTA")
             factura = await db_postgres.one(
-                "INSERT INTO public.vent_facturas_ventas (id_proveedor, id_asiento, id_info_tributaria, clave_acceso, codigo, fecha_emision, fecha_vencimiento, estado_pago, total_sin_impuesto, total_descuento, valor, propina, importe_total, estado) " +
+                "INSERT INTO public.vent_facturas_ventas (id_cliente, id_asiento, id_info_tributaria, clave_acceso, codigo, fecha_emision, fecha_vencimiento, estado_pago, total_sin_impuesto, total_descuento, valor, propina, importe_total, estado) " +
                 "VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *",
-                [id_proveedor, id_asiento, id_info_tributaria, clave_acceso, codigo, fecha_emision, fecha_vencimiento, estado_pago, total_sin_impuesto, total_descuento, valor, propina, importe_total, true]
+                [id_cliente, id_asiento, id_info_tributaria, clave_acceso, codigo, fecha_emision, fecha_vencimiento, estado_pago, total_sin_impuesto, total_descuento, valor, propina, importe_total, true]
             );
         }
         res.json({
@@ -145,6 +142,7 @@ const createFactura = async (req, res = response) => {
             msg: "Factura creada correctamente.",
             factura,
         });
+        console.log('crear factura venta: ', factura)
     } catch (error) {
         res.status(501).json({
             ok: false,
@@ -153,7 +151,7 @@ const createFactura = async (req, res = response) => {
     }
 };
 
-// Actualizar un factura
+// Actualizar una factura
 const updateFactura = async (req, res = response) => {
     const id_factura_venta = req.params.id;
     const { fecha_vencimiento, id_forma_pago, abono, observacion } = req.body;
@@ -244,7 +242,7 @@ const updateFactura = async (req, res = response) => {
     }
 };
 
-// Eliminar un factura
+// Eliminar una factura
 const deleteFactura = async (req, res = response) => {
     const id_factura_venta = req.params.id;
     try {
@@ -257,28 +255,6 @@ const deleteFactura = async (req, res = response) => {
         }
         const estado_pago = "ANULADA";
         const facturaDelete = await db_postgres.query("UPDATE vent_facturas_ventas SET estado = $1, estado_pago =$2 WHERE id_factura_venta = $3 RETURNING *", [false, estado_pago, id_factura_venta]);
-
-        /**Logica adicional para hacer automaticamente los asientos */
-
-        const asiento = await db_postgres.one(
-            //"INSERT INTO cont_asientos (fecha, referencia, documento, observacion, estado) VALUES (CURRENT_TIMESTAMP, $1, $2, $3, $4) RETURNING *",
-            "INSERT INTO cont_asientos (fecha, referencia, documento, observacion, estado) VALUES (CURRENT_DATE, $1, $2, $3, $4) RETURNING *",
-            ["Venta (Gasto)", facturaExists.codigo, "Generado por el sistema", true]
-        );
-
-        // ACTIVO - CTA # 8 CAJA CHICA MATRIZ
-        const detalle_asiento = await db_postgres.one(
-            "INSERT INTO cont_detalle_asientos (id_asiento, id_cuenta, descripcion, documento, debe, haber) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
-            [asiento.id_asiento, 8, "descripcion", facturaExists.codigo, 0.00, abono]
-        );
-
-        // GASTOS - CTA # 38 PROVEEDORES
-        const detalle_asiento2 = await db_postgres.one(
-            "INSERT INTO cont_detalle_asientos (id_asiento, id_cuenta, descripcion, documento, debe, haber) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
-            [asiento.id_asiento, 38, "descripcion", facturaExists.codigo, abono, 0.00]
-        );
-        /**FIN */
-
 
         res.json({
             ok: true,

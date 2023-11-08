@@ -6,8 +6,8 @@ const { db_postgres } = require("../../database/config");
 // Obtener todos los detalle_facturas
 const getDetalleFacturas = async (req, res) => {
     try {
-        const detalle_facturas = await db_postgres.query("SELECT * FROM vent_detalle_facturas_ventas ORDER BY id_detalle_factura_venta ASC");
-        
+        const detalle_facturas = await db_postgres.query("SELECT * FROM vent_detalle_facturas_ventas ORDER BY id_detalle_factura_venta DESC");
+
         res.json({
             ok: true,
             detalle_facturas,
@@ -52,7 +52,7 @@ const getDetalleFacturaById = async (req, res) => {
 
 
 // Obtener un detalle_factura por su ID_FACTURA
-const getDetalleFacturasByFactura = async (req, res) => {
+const getDetallesFacturaByIdFactura = async (req, res) => {
     try {
 
         const id_factura_venta = req.params.factura;
@@ -64,12 +64,12 @@ const getDetalleFacturasByFactura = async (req, res) => {
             });
         }
 
-        const detalle_facturas = await db_postgres.query(`
+        const detalles_factura = await db_postgres.query(`
             SELECT * FROM vent_detalle_facturas_ventas
             WHERE id_factura_venta = $1
         `, [id_factura_venta]);
 
-        if (!detalle_facturas) {
+        if (!detalles_factura) {
             return res.status(404).json({
                 ok: false,
                 msg: "Detalles de Factura no encontrado.",
@@ -77,7 +77,7 @@ const getDetalleFacturasByFactura = async (req, res) => {
         }
         res.json({
             ok: true,
-            detalle_facturas,
+            detalles_factura,
         });
     } catch (error) {
         console.error(error);
@@ -90,20 +90,18 @@ const getDetalleFacturasByFactura = async (req, res) => {
 
 // Crear un nuevo detalle_factura
 const createDetalleFactura = async (req, res = response) => {
-    console.log('----------------------');
-    console.log('CREAR DETALLE Factura');
 
+    console.log('CREAR DETALLE VENTA');
     const { detalles } = req.body; // Obtener el arreglo de detalles desde el cuerpo de la solicitud
 
     try {
         const promises = detalles.map(async (detalle) => {
 
-            const { id_producto, id_factura_venta, codigo_principal, detalle_adicional, cantidad, descripcion, precio_unitario, subsidio, precio_sin_subsidio, descuento, codigo_auxiliar, precio_total, iva, ice } = detalle;
-
+            const { id_producto, id_factura_venta, codigo_principal, descripcion, cantidad, precio_unitario, descuento, precio_total_sin_impuesto, codigo, codigo_porcentaje, tarifa, base_imponible, valor, ice, precio_total } = detalle;
             const detalle_factura = await db_postgres.one(
-                "INSERT INTO public.vent_detalle_facturas_ventas (id_producto, id_factura_venta, codigo_principal, detalle_adicional, cantidad, descripcion, precio_unitario, subsidio, precio_sin_subsidio, descuento, codigo_auxiliar, precio_total, iva, ice) " +
-                "VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *",
-                [id_producto, id_factura_venta, codigo_principal, detalle_adicional, cantidad, descripcion, precio_unitario, subsidio, precio_sin_subsidio, descuento, codigo_auxiliar, precio_total, iva, ice]
+                "INSERT INTO public.vent_detalle_facturas_ventas (id_producto, id_factura_venta, codigo_principal, descripcion, cantidad, precio_unitario, descuento, precio_total_sin_impuesto, codigo, codigo_porcentaje, tarifa, base_imponible, valor, ice, precio_total) " +
+                "VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *",
+                [id_producto, id_factura_venta, codigo_principal, descripcion, cantidad, precio_unitario, descuento, precio_total_sin_impuesto, codigo, codigo_porcentaje, tarifa, base_imponible, valor, ice, precio_total]
             );
 
             return detalle_factura;
@@ -158,12 +156,10 @@ const updateDetalleFactura = async (req, res = response) => {
     }
 };
 
-
-
 module.exports = {
     getDetalleFacturas,
     getDetalleFacturaById,
-    getDetalleFacturasByFactura,
+    getDetallesFacturaByIdFactura,
     createDetalleFactura,
     updateDetalleFactura,
 };

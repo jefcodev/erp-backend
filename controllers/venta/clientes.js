@@ -6,11 +6,11 @@ const getClientes = async (req, res) => {
     try {
         const desde = Number(req.query.desde) || 0;
         const limit = Number(req.query.limit);
-        const queryClientes = `SELECT * FROM vent_clientes ORDER BY id_cliente DESC OFFSET $1 LIMIT $2;`;
-        const queryClientesCount = `SELECT COUNT(*) FROM vent_clientes`;
+        const query = `SELECT * FROM vent_clientes ORDER BY id_cliente DESC OFFSET $1 LIMIT $2;`;
+        const queryCount = `SELECT COUNT(*) FROM vent_clientes`;
         const [clientes, total] = await Promise.all([
-            db_postgres.query(queryClientes, [desde, limit]),
-            db_postgres.one(queryClientesCount),
+            db_postgres.query(query, [desde, limit]),
+            db_postgres.one(queryCount),
         ]);
         res.json({
             ok: true,
@@ -54,9 +54,7 @@ const getClientesAll = async (req, res) => {
 const getClienteById = async (req, res) => {
     try {
         const id_cliente = req.params.id;
-
         const cliente = await db_postgres.query("SELECT * FROM vent_clientes WHERE id_cliente = $1", [id_cliente]);
-
         if (!cliente) {
             return res.status(404).json({
                 ok: false,
@@ -87,23 +85,22 @@ const getClienteByIndentificacion = async (req, res) => {
             });
         }
 
-        const proveedor = await db_postgres.query(`SELECT * FROM vent_clientes WHERE identificacion = $1;`, [identificacion]);
-
-        if (!proveedor) {
+        const cliente = await db_postgres.query(`SELECT * FROM vent_clientes WHERE identificacion = $1;`, [identificacion]);
+        if (!cliente) {
             return res.status(404).json({
                 ok: false,
-                msg: "Proveedor no encontrado.",
+                msg: "Cliente no encontrado.",
             });
         }
         res.json({
             ok: true,
-            proveedor,
+            cliente,
         });
     } catch (error) {
         console.error(error);
         res.status(500).json({
             ok: false,
-            msg: "Error al obtener el proveedor.",
+            msg: "Error al obtener el cliente.",
         });
     }
 };
