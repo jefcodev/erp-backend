@@ -33,6 +33,30 @@ const getUsuarios = async (req, res) => {
   }
 };
 
+
+
+const getRol = async (req, res) => {
+  try {
+   
+    const usuarioId = req.uid;
+
+    //console.log('Usuario: ' + usuarioId);
+
+    const id_role = await db_postgres.oneOrNone("SELECT rol_id FROM sec_users WHERE id = $1", [usuarioId]);
+    const rol = await db_postgres.any("SELECT descripcion FROM sec_roles WHERE id = $1", [id_role.rol_id]);
+
+    res.json({
+      ok: true,
+      rol,
+    });
+  } catch (error) {
+    res.status(500).json({
+      ok: false,
+      msg: "Error al obtener los datos",
+    });
+  }
+};
+
 const getUsuarioById = async (req, res) => {
   const id = req.params.id;
 
@@ -231,6 +255,7 @@ const getPermisos = async (usuarioId, res) => {
 
 module.exports = {
   getUsuarios,
+  getRol,
   getUsuarioById,
   getPermisos,
   createUsuario,

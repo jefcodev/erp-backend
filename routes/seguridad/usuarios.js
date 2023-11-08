@@ -5,7 +5,7 @@ const { Router } = require('express');
 const { check } = require('express-validator');
 const { validarCampos } = require('../../middlewares/validar-campos');
 
-const { getUsuarios, createUsuario, getUsuarioById, deleteUsuario, updateUsuario, updateActivateUser, getPermisos } = require('../../controllers/seguridad/usuarios');
+const { getUsuarios, createUsuario, getUsuarioById, deleteUsuario, updateUsuario, updateActivateUser, getPermisos, getRol } = require('../../controllers/seguridad/usuarios');
 const { validarJWT } = require('../../middlewares/validar-jwt');
 const { validarPermisos } = require('../../middlewares/validar-permisos');
 
@@ -14,7 +14,9 @@ const { validarPermisos } = require('../../middlewares/validar-permisos');
 const router = Router();
 
 
-router.get('/', [validarJWT], getUsuarios);
+router.get('/', [validarJWT, validarPermisos(['Admin'])], getUsuarios);
+router.get('/role',validarJWT, getRol);
+
 //router.get('/',  getPermisos);
 router.post('/',[validarJWT],
     /* [   validarJWT,

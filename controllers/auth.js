@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const { db_postgres } = require("../database/config");
 
 const { generarJWT } = require("../helpers/jwt");
+const { getMenuFrontend } = require("../helpers/menu-frontend");
 
 const login = async (req, res = response) => {
   const { email, password } = req.body;
@@ -36,6 +37,12 @@ const login = async (req, res = response) => {
 
     // Verificar estado de cuenta
     const estado = usuarioDB.estado;
+
+    const rol_id = usuarioDB.rol_id;
+
+    const result_role = await db_postgres.oneOrNone("SELECT descripcion FROM sec_roles WHERE id = $1", [rol_id]);
+
+
     
     if(estado === false){
         return res.status(404).json({
@@ -52,6 +59,7 @@ const login = async (req, res = response) => {
       ok: true,
       token,
       usuario: usuarioDB,
+      menu: getMenuFrontend(result_role.descripcion)
     });
   } catch (error) {
     console.log(error);
@@ -63,6 +71,7 @@ const login = async (req, res = response) => {
 };
 
 const renewToken = async (req, res = response) => {
+
   const uid = req.uid;
 
   // Generar el TOKEN - JWT
@@ -72,12 +81,19 @@ const renewToken = async (req, res = response) => {
     "SELECT * FROM sec_users WHERE id = $1",
     [uid]
   );
+
+
+  const rol_id = usuarioDB.rol_id;
+
+  const result_role = await db_postgres.oneOrNone("SELECT descripcion FROM sec_roles WHERE id = $1", [rol_id]);
+
   delete usuarioDB.password;
 
   res.json({
     ok: true,
     token,
     usuario: usuarioDB,
+    menu: getMenuFrontend(result_role.descripcion)
   });
 };
 
