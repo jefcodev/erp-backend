@@ -1,4 +1,4 @@
-const getMenuFrontend = (role = "Bodeguero") => {
+const getMenuFrontend = (role = "Admin") => {
   const menu = [
     {
         titulo: "Seguridad",
@@ -17,7 +17,7 @@ const getMenuFrontend = (role = "Bodeguero") => {
         { titulo: "Grupos de Clientes", url: "" },
         { titulo: "Proveedores", url: "proveedores" },
       ],
-    } /* ,
+    } ,
         {
           titulo: 'Compras',
           icono: 'mdi mdi-arrow-down-bold-circle-outline',
@@ -114,10 +114,10 @@ const getMenuFrontend = (role = "Bodeguero") => {
             { titulo: '', url: ('') },
     
           ]
-        } */,
+        },
   ];
 
-  if (role === "Bodeguero") {
+  /* if (role === "Bodeguero") {
     menu.push();
   }
 
@@ -140,7 +140,7 @@ const getMenuFrontend = (role = "Bodeguero") => {
         { titulo: "Impuestos", url: "" },
       ],
     });
-  }
+  } */
 
   return menu;
 };
