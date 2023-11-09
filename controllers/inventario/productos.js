@@ -4,10 +4,31 @@ const { generarJWT } = require("../../helpers/jwt");
 const { db_postgres } = require("../../database/config");
 
 // Obtener todos los productos
+const getProductosAll = async (req, res) => {
+    try {
+        //const productos = await db_postgres.query("SELECT * FROM inve_productos WHERE stock > 0 ORDER BY id_producto ASC");
+        const productos = await db_postgres.query("SELECT * FROM inve_productos ORDER BY id_producto ASC");
+        console.log('🟩 TODO')
+
+        res.json({
+            ok: true,
+            productos,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            ok: false,
+            msg: "Error al obtener los productos.",
+        });
+    }
+};
+
+// Obtener todos los productos
 const getProductos = async (req, res) => {
     try {
-        const productos = await db_postgres.query("SELECT * FROM inve_productos ORDER BY id_producto DESC");
-
+        //const productos = await db_postgres.query("SELECT * FROM inve_productos ORDER BY id_producto ASC");
+        const productos = await db_postgres.query("SELECT * FROM inve_productos WHERE stock > 0 ORDER BY id_producto ASC");
+        console.log('🟥 Limite')
         res.json({
             ok: true,
             productos,
@@ -169,4 +190,5 @@ module.exports = {
     createProducto,
     updateProducto,
     deleteProducto,
+    getProductosAll,
 };
