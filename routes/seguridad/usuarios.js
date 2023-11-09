@@ -18,7 +18,7 @@ router.get('/', [validarJWT, validarPermisos(['Admin'])], getUsuarios);
 router.get('/role',validarJWT, getRol);
 
 //router.get('/',  getPermisos);
-router.post('/',[validarJWT],
+router.post('/', validarPermisos(['Admin']),[validarJWT],
     /* [   validarJWT,
         check('nombre', 'El nombre es obligatorio').not().isEmpty(),
         check('password', 'El password es obligatorio').not().isEmpty(),

@@ -390,3 +390,122 @@ alter table sal_clients  add tradename varchar(255);
 
 
 
+/*  Apu  */
+
+CREATE TABLE apu_capitulo (
+    id_capitulo serial PRIMARY KEY,
+    codigo VARCHAR(255),
+    nombre VARCHAR(255),
+    descripcion VARCHAR(255)
+);
+
+CREATE TABLE apu_mano_obra (
+    id_mano_obra serial PRIMARY KEY,
+    codigo VARCHAR(255),
+    descripcion VARCHAR(255),
+    cantidad DECIMAL(10, 2),
+    unidad VARCHAR(255),
+    precio  DECIMAL(10, 2),
+    id_capitulo INT
+);
+
+
+CREATE TABLE apu_materiales (
+    id_materiales serial PRIMARY KEY,
+    codigo VARCHAR(255),
+    descripcion VARCHAR(255),
+    cantidad DECIMAL(10, 2),
+    unidad VARCHAR(255),
+    desperdicio DECIMAL(10, 2),
+    precio  DECIMAL(10, 2),
+    id_capitulo INT
+);
+
+CREATE TABLE apu_equipos (
+    id_equipos serial PRIMARY KEY,
+    codigo VARCHAR(255),
+    descripcion VARCHAR(255),
+    cantidad DECIMAL(10, 2),
+    unidad VARCHAR(255),
+    precio  DECIMAL(10, 2),
+    id_capitulo INT
+);
+
+ALTER TABLE apu_mano_obra
+    ADD COLUMN id_capitulo INT,
+    ADD CONSTRAINT fk_mano_obra_capitulo
+    FOREIGN KEY (id_capitulo) REFERENCES apu_capitulo(id_capitulo);
+
+ALTER TABLE apu_materiales
+    ADD COLUMN id_capitulo INT,
+    ADD CONSTRAINT fk_materiales_capitulo
+    FOREIGN KEY (id_capitulo) REFERENCES apu_capitulo(id_capitulo);
+
+ALTER TABLE apu_equipos
+    ADD COLUMN id_capitulo INT,
+    ADD CONSTRAINT fk_equipos_capitulo
+    FOREIGN KEY (id_capitulo) REFERENCES apu_capitulo(id_capitulo);
+
+
+
+
+
+
+
+
+
+
+    /* Insert */
+
+
+
+-- Capítulo 1
+INSERT INTO apu_capitulo (codigo, nombre, descripcion)
+VALUES ('CAP-001', 'Invernadero Paredes', 'Construcción de invernadero lateral con planchas para cortinas');
+
+-- Capítulo 2
+INSERT INTO apu_capitulo (codigo, nombre, descripcion)
+VALUES ('CAP-002', 'Invernadero Mantenimiento', 'Cambio de plástico de invernadero planchas frontal y cortinas');
+
+-- Capítulo 3
+INSERT INTO apu_capitulo (codigo, nombre, descripcion)
+VALUES ('CAP-003', 'Preparación de espacio', 'Preparación de espacio para constucción de invernadero');
+
+
+
+-- Datos de mano de obra para el Capítulo 1
+INSERT INTO apu_mano_obra (codigo, descripcion, cantidad, unidad, precio, id_capitulo)
+VALUES ('MO-001', 'Oficial', 10.5, 'Horas', 25.50, 1);
+
+-- Datos de materiales para el Capítulo 1
+INSERT INTO apu_materiales (codigo, descripcion, cantidad, unidad, desperdicio, precio, id_capitulo)
+VALUES ('MAT-001', 'Cemento', 100.0, 'Unidades', 5.0, 15.99, 1);
+
+-- Datos de equipos para el Capítulo 1
+INSERT INTO apu_equipos (codigo, descripcion, cantidad, unidad, precio, id_capitulo)
+VALUES ('EQ-001', 'Grua', 2.0, 'Horas', 75.00, 1);
+
+-- Datos de mano de obra para el Capítulo 2
+INSERT INTO apu_mano_obra (codigo, descripcion, cantidad, unidad, precio, id_capitulo)
+VALUES ('MO-002', 'Ayudante', 8.0, 'Horas', 30.75, 2);
+
+-- Datos de materiales para el Capítulo 2
+INSERT INTO apu_materiales (codigo, descripcion, cantidad, unidad, desperdicio, precio, id_capitulo)
+VALUES ('MAT-002', 'Plástico', 50.0, 'Unidades', 3.0, 10.99, 2);
+
+-- Datos de equipos para el Capítulo 2
+INSERT INTO apu_equipos (codigo, descripcion, cantidad, unidad, precio, id_capitulo)
+VALUES ('EQ-002', 'Tecle', 4.0, 'Horas', 80.00, 2);
+
+-- Datos de mano de obra para el Capítulo 3
+INSERT INTO apu_mano_obra (codigo, descripcion, cantidad, unidad, precio, id_capitulo)
+VALUES ('MO-003', 'Sub Oficial', 12.0, 'Horas', 35.25, 3);
+
+-- Datos de materiales para el Capítulo 3
+INSERT INTO apu_materiales (codigo, descripcion, cantidad, unidad, desperdicio, precio, id_capitulo)
+VALUES ('MAT-003', 'Barilla 12mm', 75.0, 'Unidades', 2.5, 12.99, 3);
+
+-- Datos de equipos para el Capítulo 3
+INSERT INTO apu_equipos (codigo, descripcion, cantidad, unidad, precio, id_capitulo)
+VALUES ('EQ-003', 'Maquina pala', 3.0, 'Horas', 90.00, 3);
+
