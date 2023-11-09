@@ -106,6 +106,8 @@ const createFactura = async (req, res = response) => {
             msg: "Datos no válidos. Por favor, verifica los campos.",
         });
     }
+    console.log('fecha emision: ', fecha_emision)
+    console.log('fecha vencimient: ', fecha_vencimiento)
     try {
         let factura;
         let estado_pago = "PENDIENTE";
@@ -188,7 +190,7 @@ const updateFactura = async (req, res = response) => {
             if (facturaExists.importe_total == abono_sumado) {
                 estado_pago = "PAGADA";
             }
-
+            console.log("🟥 estado_pago: ", estado_pago)
             facturaUpdate = await db_postgres.one(
                 "UPDATE vent_facturas_ventas SET fecha_vencimiento = $1, estado_pago = $2, abono = $3 WHERE id_factura_venta = $4 RETURNING *",
                 [fecha_vencimiento, estado_pago, abono_sumado, id_factura_venta]

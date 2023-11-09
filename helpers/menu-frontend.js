@@ -33,7 +33,7 @@ const getMenuFrontend = (role = "Admin") => {
           icono: 'mdi mdi-arrow-up-bold-circle-outline',
           submenu: [
             { titulo: 'Clientes', url: ('clientes') },
-            { titulo: 'Facturas Venta', url: ('facturas-venta') },
+            { titulo: 'Facturas Venta', url: ('facturas-ventas') },
             { titulo: 'Facturación Electrónica', url: ('') },
             { titulo: 'Proformas', url: ('quotation') },
             { titulo: 'Punto de Venta', url: ('') },

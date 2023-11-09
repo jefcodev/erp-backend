@@ -6,9 +6,9 @@ const config = {
 
     host: "localhost",
     port: "5432",
-    database: "inveservice-2",
+    database: "inveservice",
     user: "postgres",
-    password: "root",  
+    password: "2023",  
     
    
    /*  host: 'systemcode.ec',
