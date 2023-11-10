@@ -53,6 +53,7 @@ app.use('/api/v1/apu', require('./routes/apu/apus'));
 
 // Contabilidad
 app.use('/api/v1/cuentas', require('./routes/contabilidad/cuentas'));
+app.use('/api/v1/pagos', require('./routes/contabilidad/pagos'));
 app.use('/api/v1/formas-pago', require('./routes/contabilidad/formas-pago'));
 app.use('/api/v1/tarifas-iva', require('./routes/contabilidad/tarifas-iva'));
 app.use('/api/v1/asientos', require('./routes/contabilidad/asientos'));

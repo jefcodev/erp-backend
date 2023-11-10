@@ -111,6 +111,8 @@ const getProveedorById = async (req, res) => {
 const getProveedorByIndentificacion = async (req, res) => {
     try {
         const identificacion = req.params.identificacion;
+        console.log('🟩 LLEGA BUSCAR PROVEEDOR: ', identificacion)
+
         if (!identificacion) {
             return res.status(400).json({
                 ok: false,
@@ -128,6 +130,8 @@ const getProveedorByIndentificacion = async (req, res) => {
             ok: true,
             proveedor,
         });
+        console.log('🟩 sale: ', proveedor)
+
     } catch (error) {
         console.error(error);
         res.status(500).json({
@@ -140,15 +144,34 @@ const getProveedorByIndentificacion = async (req, res) => {
 // Crear un nuevo proveedor
 const createProveedor = async (req, res = response) => {
     const { identificacion, razon_social, nombre_comercial, direccion, telefono, email, tipo_contribuyente, regimen, categoria, obligado_contabilidad, agente_retención, contribuyente_especial } = req.body;
-    const errors = validationResult(req);
+    console.log('🟩 LLEGA CREAR PROVEEDOR: ')
+    /*const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({
             ok: false,
             errors: errors.array(),
             msg: "Datos no válidos. Por favor, verifica los campos.",
         });
+    }*/
+    console.log('IDENTIFICACION: ', identificacion)
+    console.log('RAZON SOCIAL: ', razon_social)
+    console.log('DIRECCION: ', direccion)
+    console.log('telefono 0: ', telefono)
+
+    let nuevoTelefono = telefono; // Crear una nueva variable para 'telefono'
+    let nuevoEmail = email; // Crear una nueva variable para 'email'
+
+    if (telefono === '0') {
+        // Asignar un valor nulo o vacío a 'nuevoTelefono' y 'nuevoEmail' cuando 'telefono' sea '0'
+        console.log('ENTRAAAAAAAAAAA')
+        nuevoTelefono = null;
+        nuevoEmail = null;
     }
+    console.log('telefono: ', nuevoTelefono)
+    console.log('email: ', nuevoEmail)
+
     try {
+
         const identificacionExists = await db_postgres.oneOrNone("SELECT * FROM comp_proveedores WHERE identificacion = $1", [identificacion]);
         if (identificacionExists) {
             return res.status(400).json({
@@ -156,7 +179,7 @@ const createProveedor = async (req, res = response) => {
                 msg: "La identificación ya existe. Por favor, proporciona una identificación única.",
             });
         }
-        const emailExists = await db_postgres.oneOrNone("SELECT * FROM comp_proveedores WHERE email = $1", [email]);
+        const emailExists = await db_postgres.oneOrNone("SELECT * FROM comp_proveedores WHERE email = $1", [nuevoEmail]);
         if (emailExists) {
             return res.status(400).json({
                 ok: false,
@@ -165,7 +188,7 @@ const createProveedor = async (req, res = response) => {
         }
         const proveedor = await db_postgres.one(
             "INSERT INTO comp_proveedores (identificacion, razon_social, nombre_comercial, direccion, telefono, email, estado) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
-            [identificacion, razon_social, nombre_comercial, direccion, telefono, email, true]
+            [identificacion, razon_social, nombre_comercial, direccion, nuevoTelefono, nuevoEmail, true]
         );
         res.json({
             ok: true,

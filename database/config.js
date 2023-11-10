@@ -11,7 +11,7 @@ const config = {
     password: "root" */
    
     host: 'systemcode.ec',
-    port: '5432',
+    port: 5432,
     database: 'inveservicefgl',
     user: 'user_inveservice',
     password: 'v@3Whv858' 
