@@ -20,6 +20,39 @@ const getProductos = async (req, res) => {
         });
     }
 };
+const getProductosMateriales = async (req, res) => {
+    try {
+
+        const productos = await db_postgres.query("SELECT * FROM inve_productos  WHERE id_tipo_inventario = $1  ORDER BY id_producto DESC",[1]);
+
+        res.json({
+            ok: true,
+            productos,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            ok: false,
+            msg: "Error al obtener los productos.",
+        });
+    }
+};
+const getProductosHerramientas = async (req, res) => {
+    try {
+        const productos = await db_postgres.query("SELECT * FROM inve_productos  WHERE id_tipo_inventario = $1  ORDER BY id_producto DESC",[2]);
+
+        res.json({
+            ok: true,
+            productos,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            ok: false,
+            msg: "Error al obtener los productos.",
+        });
+    }
+};
 
 // Obtener un producto por su ID
 const getProductoById = async (req, res) => {
@@ -165,6 +198,8 @@ const deleteProducto = async (req, res = response) => {
 
 module.exports = {
     getProductos,
+    getProductosHerramientas,
+    getProductosMateriales,
     getProductoById,
     createProducto,
     updateProducto,

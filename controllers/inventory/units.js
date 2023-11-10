@@ -3,7 +3,7 @@ const { db_postgres } = require("../../database/config");
 
 const getUnits = async (req, res) => {
 
-    const units = await db_postgres.query('SELECT * FROM inv_units ');
+    const units = await db_postgres.query('SELECT * FROM inve_unidades_medida ');
 
     res.json({
         ok: true,
@@ -17,7 +17,7 @@ const createUnit = async (req, res = response) => {
 
     try {
 
-        const unit = await db_postgres.query('INSERT INTO inv_units (name_units, status) VALUES ($1,$2);',
+        const unit = await db_postgres.query('INSERT INTO inve_unidades_medida (name_units, status) VALUES ($1,$2);',
             [name_units,true]);
 
         res.json({

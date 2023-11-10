@@ -30,7 +30,7 @@ app.use('/api/v1/upload', require('./routes/uploads'));
 app.use('/api/v1/inventory', require('./routes/inventory/inventory'));
 
 // Inventario
-app.use('/api/v1/productos', require('./routes/inventario/productos'));
+app.use('/api/v1/inventario/productos', require('./routes/inventario/productos'));
 
 // Purchase
 app.use('/api/v1/purchase', require('./routes/purchase/purchases'));
