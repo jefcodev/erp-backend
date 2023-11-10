@@ -107,26 +107,27 @@ const getPagoById = async (req, res) => {
     }
 };
 
-// Obtener un pago por su identificación
-const getPagoByIdFactura = async (req, res) => {
-    const id_factura = req.params.factura;
-    let query;
+// Obtener un pago por id factura compra
+const getPagosByIdFacturaCompra = async (req, res) => {
+    const id_factura = req.params.id;
+
     console.log('req: ', req.params.factura);
     console.log('id factura: ', id_factura);
 
+    console.log("COMPRA");
     try {
-        // Determinar si el id_factura corresponde a una factura de compra o una factura de venta
-        const esFacturaCompra = await db_postgres.any("SELECT id_factura_compra FROM cont_pagos WHERE id_factura_compra = $1", [id_factura]);
-        if (esFacturaCompra) {
-            // El id_factura corresponde a una factura de compra
-            console.log("COMPRA");
-            query = `SELECT * FROM cont_pagos WHERE id_factura_compra = $1;`;
-        } else {
-            // El id_factura corresponde a una factura de venta
-            console.log("VENTA");
-            query = `SELECT * FROM cont_pagos WHERE id_factura_venta = $1;`;
+        const facturaExists = await db_postgres.oneOrNone("SELECT * FROM comp_facturas_compras WHERE id_factura_compra = $1", [id_factura]);
+        if (!facturaExists) {
+            return res.status(400).json({
+                ok: false,
+                msg: "La factura no existe. Por favor, proporciona un ID de factura válido.",
+            });
         }
+
+        const query = `SELECT * FROM cont_pagos WHERE id_factura_compra = $1;`;
+
         const pagos = await db_postgres.query(query, [id_factura]);
+
         if (!pagos || pagos.length === 0) {
             res.json({
                 ok: true,
@@ -147,33 +148,38 @@ const getPagoByIdFactura = async (req, res) => {
     }
 };
 
-const getPagoByIdFactura2 = async (req, res) => {
-    const id_factura = req.params.factura;
-    let query;
-    console.log('req: ', req.params.factura)
-    console.log('id factura: ', id_factura)
+// Obtener un pago por id factura venta
+const getPagosByIdFacturaVenta = async (req, res) => {
+    const id_factura = req.params.id;
 
+    console.log('req: ', req.params.factura);
+    console.log('id factura: ', id_factura);
+
+    console.log("VENTA");
     try {
-        // Determinar si el id_factura corresponde a una factura de compra o una factura de venta
-        const esFacturaCompra = await db_postgres.many("SELECT id_factura_compra FROM cont_pagos WHERE id_factura_compra = $1", [id_factura]);
-        if (esFacturaCompra) {
-            // El id_factura corresponde a una factura de compra
-            console.log("COMPRA");
-            query = `SELECT * FROM cont_pagos WHERE id_factura_compra = $1;`;
-        } else {
-            // El id_factura corresponde a una factura de venta
-            console.log("VENTA");
-            query = `SELECT * FROM cont_pagos WHERE id_factura_venta = $1;`;
+        const facturaExists = await db_postgres.oneOrNone("SELECT * FROM vent_facturas_ventas WHERE id_factura_venta = $1", [id_factura]);
+        if (!facturaExists) {
+            return res.status(400).json({
+                ok: false,
+                msg: "La factura no existe. Por favor, proporciona un ID de factura válido.",
+            });
         }
+
+        const query = `SELECT * FROM cont_pagos WHERE id_factura_venta = $1;`;
+
         const pagos = await db_postgres.query(query, [id_factura]);
-        const response = {
-            ok: true,
-            pagos: pagos || [], // Si "pagos" es falsy (null o undefined), devolver un arreglo vacío
-            totalPagos: pagos ? pagos.length : 0,
-            //msg: pagos && pagos.length > 0 ? null : "No se encontraron pagos para esta factura.",
-        };
-        console.log("Solo pasa: 🟩")
-        res.json(response);
+
+        if (!pagos || pagos.length === 0) {
+            res.json({
+                ok: true,
+                pagos: [], // Devolver un arreglo vacío si no hay pagos
+            });
+        } else {
+            res.json({
+                ok: true,
+                pagos: pagos,
+            });
+        }
     } catch (error) {
         console.error(error);
         res.status(500).json({
@@ -267,16 +273,75 @@ const updatePago = async (req, res = response) => {
 // Eliminar un pago
 const deletePago = async (req, res = response) => {
     const id_pago = req.params.id;
+
     console.log("ENTRA A BORRAR")
     try {
         const pagoExists = await db_postgres.oneOrNone("SELECT * FROM cont_pagos WHERE id_pago = $1", [id_pago]);
+
         if (!pagoExists) {
             return res.status(400).json({
                 ok: false,
                 msg: "El pago no existe. Por favor, proporciona un ID de pago válido.",
             });
         }
-        const pagoDelete = await db_postgres.query("UPDATE cont_pagos SET estado = $1 WHERE id_pago = $2 RETURNING *", [false, id_pago]);
+
+        const abono_pago = parseFloat(pagoExists.abono) || 0;
+        console.log("abono bdd: ", abono_pago)
+        const id_factura_compra = (pagoExists.id_factura_compra) || 0;
+        const id_factura_venta = (pagoExists.id_factura_venta) || 0;
+
+        console.log("id_factura_compra: ", id_factura_compra)
+        console.log("id_factura_venta: ", id_factura_venta)
+        let pagoDelete;
+        let facturaUpdate;
+        let estado_pago;
+        if (id_factura_compra > 0) {
+
+            const facturaExists = await db_postgres.oneOrNone("SELECT * FROM comp_facturas_compras WHERE id_factura_compra = $1", [id_factura_compra]);
+            if (!facturaExists) {
+                return res.status(400).json({
+                    ok: false,
+                    msg: "La factura no existe. Por favor, proporciona un ID de factura válido.",
+                });
+            }
+            const abono_factura = parseFloat(facturaExists.abono) || 0;
+            abono_restado = abono_factura - abono_pago;
+
+            estado_pago = facturaExists.estado_pago
+            if (estado_pago === "PAGADA") {
+                estado_pago = "PENDIENTE";
+            }
+            facturaUpdate = await db_postgres.one(
+                "UPDATE comp_facturas_compras SET estado_pago = $1, abono = $2 WHERE id_factura_compra = $3 RETURNING *",
+                [estado_pago, abono_restado, id_factura_compra]
+            );
+
+            pagoDelete = await db_postgres.query("UPDATE cont_pagos SET estado = $1 WHERE id_pago = $2 RETURNING *", [false, id_pago]);
+
+        } else if (id_factura_venta > 0) {
+
+            const facturaExists = await db_postgres.oneOrNone("SELECT * FROM vent_facturas_ventas WHERE id_factura_venta = $1", [id_factura_venta]);
+            if (!facturaExists) {
+                return res.status(400).json({
+                    ok: false,
+                    msg: "La factura no existe. Por favor, proporciona un ID de factura válido.",
+                });
+            }
+            const abono_factura = parseFloat(facturaExists.abono) || 0;
+            abono_restado = abono_factura - abono_pago;
+
+            estado_pago = facturaExists.estado_pago
+            if (estado_pago === "PAGADA") {
+                estado_pago = "PENDIENTE";
+            }
+
+            facturaUpdate = await db_postgres.one(
+                "UPDATE vent_facturas_ventas SET estado_pago = $1, abono = $2 WHERE id_factura_venta = $3 RETURNING *",
+                [estado_pago, abono_restado, id_factura_venta]
+            );
+            pagoDelete = await db_postgres.query("UPDATE cont_pagos SET estado = $1 WHERE id_pago = $2 RETURNING *", [false, id_pago]);
+        }
+
         res.json({
             ok: true,
             msg: "Pago borrado correctamente.",
@@ -296,7 +361,8 @@ module.exports = {
     getPagosSearch,
     getPagosAll,
     getPagoById,
-    getPagoByIdFactura,
+    getPagosByIdFacturaCompra,
+    getPagosByIdFacturaVenta,
     createPago,
     updatePago,
     deletePago,

@@ -8,7 +8,7 @@ const getProductosAll = async (req, res) => {
     try {
         //const productos = await db_postgres.query("SELECT * FROM inve_productos WHERE stock > 0 ORDER BY id_producto ASC");
         const productos = await db_postgres.query("SELECT * FROM inve_productos ORDER BY id_producto ASC");
-
+        console.log("LLeva")
         res.json({
             ok: true,
             productos,
@@ -42,7 +42,7 @@ const getProductos = async (req, res) => {
 const getProductosMateriales = async (req, res) => {
     try {
 
-        const productos = await db_postgres.query("SELECT * FROM inve_productos  WHERE id_tipo_inventario = $1  ORDER BY id_producto DESC",[1]);
+        const productos = await db_postgres.query("SELECT * FROM inve_productos  WHERE id_tipo_inventario = $1  ORDER BY id_producto DESC", [1]);
 
         res.json({
             ok: true,
@@ -58,7 +58,7 @@ const getProductosMateriales = async (req, res) => {
 };
 const getProductosHerramientas = async (req, res) => {
     try {
-        const productos = await db_postgres.query("SELECT * FROM inve_productos  WHERE id_tipo_inventario = $1  ORDER BY id_producto DESC",[2]);
+        const productos = await db_postgres.query("SELECT * FROM inve_productos  WHERE id_tipo_inventario = $1  ORDER BY id_producto DESC", [2]);
 
         res.json({
             ok: true,

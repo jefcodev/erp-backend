@@ -10,7 +10,8 @@ const {
     getPagosSearch,
     getPagosAll,
     getPagoById,
-    getPagoByIdFactura,
+    getPagosByIdFacturaCompra,
+    getPagosByIdFacturaVenta,
     createPago,
     updatePago,
     deletePago
@@ -23,7 +24,8 @@ router.get('/', validarJWT, getPagos);
 router.get('/search/', validarJWT, getPagosSearch);
 router.get('/all/', getPagosAll);
 router.get('/id/:id', validarJWT, getPagoById);
-router.get('/factura/:factura', validarJWT, getPagoByIdFactura);
+router.get('/factura/compra/:id', validarJWT, getPagosByIdFacturaCompra);
+router.get('/factura/venta/:id', validarJWT, getPagosByIdFacturaVenta);
 
 // Ruta para crear un pago
 router.post('/',
