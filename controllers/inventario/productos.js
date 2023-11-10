@@ -8,7 +8,6 @@ const getProductosAll = async (req, res) => {
     try {
         //const productos = await db_postgres.query("SELECT * FROM inve_productos WHERE stock > 0 ORDER BY id_producto ASC");
         const productos = await db_postgres.query("SELECT * FROM inve_productos ORDER BY id_producto ASC");
-        console.log('🟩 TODO')
 
         res.json({
             ok: true,
@@ -28,7 +27,6 @@ const getProductos = async (req, res) => {
     try {
         //const productos = await db_postgres.query("SELECT * FROM inve_productos ORDER BY id_producto ASC");
         const productos = await db_postgres.query("SELECT * FROM inve_productos WHERE stock > 0 ORDER BY id_producto ASC");
-        console.log('🟥 Limite')
         res.json({
             ok: true,
             productos,

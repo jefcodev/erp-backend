@@ -1,6 +1,4 @@
-const { response } = require("express");
 const { validationResult } = require("express-validator");
-const { generarJWT } = require("../../helpers/jwt");
 const { db_postgres } = require("../../database/config");
 
 // Obtener todos los detalle_facturas
@@ -88,6 +86,7 @@ const getDetallesFacturaByIdFactura = async (req, res) => {
     }
 };
 
+/*
 // Crear un nuevo detalle_factura
 const createDetalleFactura = async (req, res = response) => {
     
@@ -123,7 +122,144 @@ const createDetalleFactura = async (req, res = response) => {
         });
     }
 };
+*/
 
+// Crear un nuevo detalle_factura
+const createDetalleFactura = async (req, res = response) => {
+
+    console.log('CREAR DETALLE COMPRA');
+    const { detalles } = req.body; // Obtener el arreglo de detalles desde el cuerpo de la solicitud
+    try {
+        const promises = detalles.map(async (detalle) => {
+
+            const { id_producto, id_factura_compra, codigo_principal, descripcion, cantidad, precio_unitario, descuento, precio_total_sin_impuesto, codigo, codigo_porcentaje, tarifa, base_imponible, valor, ice, precio_total } = detalle;
+            const detalle_factura = await db_postgres.one(
+                "INSERT INTO public.comp_detalle_facturas_compras (id_producto, id_factura_compra, codigo_principal, descripcion, cantidad, precio_unitario, descuento, precio_total_sin_impuesto, codigo, codigo_porcentaje, tarifa, base_imponible, valor, ice, precio_total) " +
+                "VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *",
+                [id_producto, id_factura_compra, codigo_principal, descripcion, cantidad, precio_unitario, descuento, precio_total_sin_impuesto, codigo, codigo_porcentaje, tarifa, base_imponible, valor, ice, precio_total]
+            );
+
+            console.log("Precio Unitario", precio_unitario)
+            console.log("Valor", valor)
+            console.log("Precio total", precio_total)
+            const nuevoPrecioCompra = precio_total / cantidad;
+            console.log("Nuevo Precio de Compra", nuevoPrecioCompra)
+            const stockActualizado = await actualizarStockProducto(id_producto, cantidad, nuevoPrecioCompra);
+
+            return detalle_factura;
+        });
+
+        //const detalle_facturas = await Promise.all(promises);
+
+        //const token = await generarJWT(detalle_facturas[0].id_detalle_factura_compra);
+        res.json({
+            ok: true,
+            msg: "Detalles de factura creados correctamente.",
+            //detalle_factura,
+            //token: token,
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(501).json({
+            ok: false,
+            msg: "Error al crear los detalles de factura. Por favor, inténtalo de nuevo.",
+        });
+    }
+};
+
+const createDetalleFactura2 = async (req, res = response) => {
+    console.log('CREAR DETALLE COMPRAS');
+    const { detalles } = req.body;
+
+    try {
+        const detalle_factura = await Promise.all(
+            detalles.map(async (detalle) => {
+                const {
+                    id_producto,
+                    id_factura_venta,
+                    codigo_principal,
+                    descripcion,
+                    cantidad,
+                    precio_unitario,
+                    descuento,
+                    precio_total_sin_impuesto,
+                    codigo,
+                    codigo_porcentaje,
+                    tarifa,
+                    base_imponible,
+                    valor,
+                    ice,
+                    precio_total,
+                } = detalle;
+
+                // Inserta el detalle de factura en la base de datos
+                const detalle_factura = await db_postgres.one(
+                    "INSERT INTO public.vent_detalle_facturas_ventas (id_producto, id_factura_venta, codigo_principal, descripcion, cantidad, precio_unitario, descuento, precio_total_sin_impuesto, codigo, codigo_porcentaje, tarifa, base_imponible, valor, ice, precio_total) " +
+                    "VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *",
+                    [
+                        id_producto,
+                        id_factura_venta,
+                        codigo_principal,
+                        descripcion,
+                        cantidad,
+                        precio_unitario,
+                        descuento,
+                        precio_total_sin_impuesto,
+                        codigo,
+                        codigo_porcentaje,
+                        tarifa,
+                        base_imponible,
+                        valor,
+                        ice,
+                        precio_total,
+                    ]
+                );
+                console.log("Precio Unitario", precio_unitario)
+                console.log("Valor", valor)
+                console.log("Precio total", precio_total)
+                const nuevoPrecioCompra = precio_total / cantidad;
+                console.log("Nuevo Precio de Compra", nuevoPrecioCompra)
+
+                // Aquí puedes agregar la lógica para actualizar el stock del producto
+                const stockActualizado = await actualizarStockProducto(id_producto, cantidad, nuevoPrecioCompra);
+
+                return detalle_factura;
+            })
+        );
+
+        //const token = await generarJWT(detalle_facturas[0].id_detalle_factura_venta);
+
+        res.json({
+            ok: true,
+            msg: "Detalles de factura creados correctamente.",
+            detalle_factura,
+            //token: token,
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(501).json({
+            ok: false,
+            msg: "Error al crear los detalles de factura. Por favor, inténtalo de nuevo.",
+        });
+    }
+};
+
+// Función para actualizar el stock del producto
+const actualizarStockProducto = async (id_producto, cantidad, nuevoPrecioCompra) => {
+    try {
+        // Realiza la lógica para actualizar el stock del producto en la base de datos
+        // Puedes usar db_postgres o tu propia lógica para actualizar el stock
+        // Aquí deberías restar 'cantidad' al stock del producto con el 'id_producto' dado
+        console.log('🟩id prodcuto: ', id_producto)
+        console.log('CANTIDAD: ', cantidad)
+        // Ejemplo:
+        await db_postgres.none("UPDATE inve_productos SET stock = stock + $1, precio_compra = $2 WHERE id_producto = $3", [cantidad, nuevoPrecioCompra, id_producto]);
+
+        return true; // Indica que la actualización del stock fue exitosa
+    } catch (error) {
+        return false; // Indica que ocurrió un error al actualizar el stock
+    }
+};
 
 // Actualizar un detalle_factura
 const updateDetalleFactura = async (req, res = response) => {

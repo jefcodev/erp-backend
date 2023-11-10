@@ -108,26 +108,72 @@ const getPagoById = async (req, res) => {
 };
 
 // Obtener un pago por su identificación
-const getPagoByIndentificacion = async (req, res) => {
+const getPagoByIdFactura = async (req, res) => {
+    const id_factura = req.params.factura;
+    let query;
+    console.log('req: ', req.params.factura);
+    console.log('id factura: ', id_factura);
+
     try {
-        const identificacion = req.params.identificacion;
-        if (!identificacion) {
-            return res.status(400).json({
-                ok: false,
-                msg: "La identificación es requerida.",
+        // Determinar si el id_factura corresponde a una factura de compra o una factura de venta
+        const esFacturaCompra = await db_postgres.any("SELECT id_factura_compra FROM cont_pagos WHERE id_factura_compra = $1", [id_factura]);
+        if (esFacturaCompra) {
+            // El id_factura corresponde a una factura de compra
+            console.log("COMPRA");
+            query = `SELECT * FROM cont_pagos WHERE id_factura_compra = $1;`;
+        } else {
+            // El id_factura corresponde a una factura de venta
+            console.log("VENTA");
+            query = `SELECT * FROM cont_pagos WHERE id_factura_venta = $1;`;
+        }
+        const pagos = await db_postgres.query(query, [id_factura]);
+        if (!pagos || pagos.length === 0) {
+            res.json({
+                ok: true,
+                pagos: [], // Devolver un arreglo vacío si no hay pagos
+            });
+        } else {
+            res.json({
+                ok: true,
+                pagos: pagos,
             });
         }
-        const pago = await db_postgres.query(`SELECT * FROM cont_pagos WHERE identificacion = $1;`, [identificacion]);
-        if (!pago) {
-            return res.status(404).json({
-                ok: false,
-                msg: "Pago no encontrado.",
-            });
-        }
-        res.json({
-            ok: true,
-            pago,
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            ok: false,
+            msg: "Error al obtener el pago.",
         });
+    }
+};
+
+const getPagoByIdFactura2 = async (req, res) => {
+    const id_factura = req.params.factura;
+    let query;
+    console.log('req: ', req.params.factura)
+    console.log('id factura: ', id_factura)
+
+    try {
+        // Determinar si el id_factura corresponde a una factura de compra o una factura de venta
+        const esFacturaCompra = await db_postgres.many("SELECT id_factura_compra FROM cont_pagos WHERE id_factura_compra = $1", [id_factura]);
+        if (esFacturaCompra) {
+            // El id_factura corresponde a una factura de compra
+            console.log("COMPRA");
+            query = `SELECT * FROM cont_pagos WHERE id_factura_compra = $1;`;
+        } else {
+            // El id_factura corresponde a una factura de venta
+            console.log("VENTA");
+            query = `SELECT * FROM cont_pagos WHERE id_factura_venta = $1;`;
+        }
+        const pagos = await db_postgres.query(query, [id_factura]);
+        const response = {
+            ok: true,
+            pagos: pagos || [], // Si "pagos" es falsy (null o undefined), devolver un arreglo vacío
+            totalPagos: pagos ? pagos.length : 0,
+            //msg: pagos && pagos.length > 0 ? null : "No se encontraron pagos para esta factura.",
+        };
+        console.log("Solo pasa: 🟩")
+        res.json(response);
     } catch (error) {
         console.error(error);
         res.status(500).json({
@@ -221,6 +267,7 @@ const updatePago = async (req, res = response) => {
 // Eliminar un pago
 const deletePago = async (req, res = response) => {
     const id_pago = req.params.id;
+    console.log("ENTRA A BORRAR")
     try {
         const pagoExists = await db_postgres.oneOrNone("SELECT * FROM cont_pagos WHERE id_pago = $1", [id_pago]);
         if (!pagoExists) {
@@ -249,7 +296,7 @@ module.exports = {
     getPagosSearch,
     getPagosAll,
     getPagoById,
-    getPagoByIndentificacion,
+    getPagoByIdFactura,
     createPago,
     updatePago,
     deletePago,
