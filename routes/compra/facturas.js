@@ -37,6 +37,4 @@ router.delete('/:id', [validarJWT],
     deleteFactura
 );
 
-
-
 module.exports = router;
