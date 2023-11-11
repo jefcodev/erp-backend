@@ -75,11 +75,11 @@ const getProductosHerramientas = async (req, res) => {
 
 const getPuestosTrabajo = async (req, res) => {
     try {
-        const trabajos = await db_postgres.query("SELECT * FROM apu_puestos_trabajo  ORDER BY cargo ASC", [2]);
+        const puestos = await db_postgres.query("SELECT * FROM apu_puestos_trabajo  ORDER BY cargo ASC", [2]);
 
         res.json({
             ok: true,
-            trabajos,
+            puestos,
         });
     } catch (error) {
         console.error(error);
