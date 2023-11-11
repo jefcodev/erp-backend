@@ -73,6 +73,23 @@ const getProductosHerramientas = async (req, res) => {
     }
 };
 
+const getPuestosTrabajo = async (req, res) => {
+    try {
+        const trabajos = await db_postgres.query("SELECT * FROM apu_puestos_trabajo  ORDER BY cargo ASC", [2]);
+
+        res.json({
+            ok: true,
+            trabajos,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            ok: false,
+            msg: "Error al obtener los productos.",
+        });
+    }
+};
+
 // Obtener un producto por su ID
 const getProductoById = async (req, res) => {
     try {
@@ -219,6 +236,7 @@ module.exports = {
     getProductos,
     getProductosHerramientas,
     getProductosMateriales,
+    getPuestosTrabajo,
     getProductoById,
     createProducto,
     updateProducto,
