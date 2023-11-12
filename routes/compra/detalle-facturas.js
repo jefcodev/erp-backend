@@ -2,6 +2,7 @@
     Ruta: /api/facturas
 */
 const { Router } = require('express');
+const { validarJWT } = require('../../middlewares/validar-jwt');
 const { check } = require('express-validator');
 const { validarCampos } = require('../../middlewares/validar-campos');
 
@@ -13,34 +14,20 @@ const {
     updateDetalleFactura
 } = require('../../controllers/compra/detalle-facturas');
 
-const { validarJWT } = require('../../middlewares/validar-jwt');
-
 const router = Router();
 
-router.get('/', getDetalleFacturas);
-//router.get('/', validarJWT, getDetalleFacturas);
+// Rutas para obtener detalles de factura
+router.get('/', validarJWT, getDetalleFacturas);
+router.get('/id/:id', validarJWT, getDetalleFacturaById);
+router.get('/factura/:factura', validarJWT, getDetallesFacturaByIdFactura);
 
-//router.get('/:id', getDetalleFacturaById);
-router.get('/id/:id', getDetalleFacturaById);
-router.get('/factura/:factura', getDetallesFacturaByIdFactura);
-
-router.post('/',
-    /* [   validarJWT,
-        check('nombre', 'El nombre es obligatorio').not().isEmpty(),
-        check('password', 'El password es obligatorio').not().isEmpty(),
-        check('email', 'El email es obligatorio').isEmail(),
-        validarCampos,
-    ],  */
+// Ruta para crear un detalle factura
+router.post('/', [validarJWT],
     createDetalleFactura
 );
 
-router.put('/:id',
-    /* [   validarJWT,
-        check('nombre', 'El nombre es obligatorio').not().isEmpty(),
-        check('password', 'El password es obligatorio').not().isEmpty(),
-        check('email', 'El email es obligatorio').isEmail(),
-        validarCampos,
-    ],  */
+// Ruta para actualizar un detalle factura
+router.put('/:id', [validarJWT],
     updateDetalleFactura
 );
 

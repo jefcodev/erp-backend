@@ -4,35 +4,30 @@
 const { Router } = require('express');
 const { check } = require('express-validator');
 const { validarCampos } = require('../../middlewares/validar-campos');
-
-const { getDetalleAsientos, getDetalleAsientoById,getDetalleAsientosByAsiento, createDetalleAsiento, updateDetalleAsiento } = require('../../controllers/contabilidad/detalle-asientos');
 const { validarJWT } = require('../../middlewares/validar-jwt');
+
+const {
+    getDetalleAsientos,
+    getDetalleAsientoById,
+    getDetallesAsientoByIdAsiento,
+    createDetalleAsiento,
+    updateDetalleAsiento,
+} = require('../../controllers/contabilidad/detalle-asientos');
 
 const router = Router();
 
-router.get('/', getDetalleAsientos);
-//router.get('/', validarJWT, getDetalleAsientos);
-
+// Rutas para obtener detalles de asiento
+router.get('/', validarJWT, getDetalleAsientos);
 router.get('/:id/id', getDetalleAsientoById);
-router.get('/:asiento/:asiento', getDetalleAsientosByAsiento);
+router.get('/:asiento/:asiento', getDetallesAsientoByIdAsiento);
 
-router.post('/', 
-    /* [   validarJWT,
-        check('nombre', 'El nombre es obligatorio').not().isEmpty(),
-        check('password', 'El password es obligatorio').not().isEmpty(),
-        check('email', 'El email es obligatorio').isEmail(),
-        validarCampos,
-    ],  */
+// Ruta para crear un detalle asiento
+router.post('/', [validarJWT],
     createDetalleAsiento
 );
 
-router.put('/:id',
-    /* [   validarJWT,
-        check('nombre', 'El nombre es obligatorio').not().isEmpty(),
-        check('password', 'El password es obligatorio').not().isEmpty(),
-        check('email', 'El email es obligatorio').isEmail(),
-        validarCampos,
-    ],  */
+// Ruta para actualizar un detalle asiento
+router.put('/:id', [validarJWT],
     updateDetalleAsiento
 );
 

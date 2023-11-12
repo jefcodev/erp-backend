@@ -1,6 +1,4 @@
-const { response } = require("express");
 const { validationResult } = require("express-validator");
-const { generarJWT } = require("../../helpers/jwt");
 const { db_postgres } = require("../../database/config");
 
 // Obtener todos los asientos con un limite
@@ -94,7 +92,7 @@ const getAsientoById = async (req, res) => {
 // Crear un nuevo asiento
 const createAsiento = async (req, res = response) => {
     console.log('CREAR ASIENTO')
-    const { referencia, documento, observacion } = req.body;
+    const { fecha_asiento, referencia, documento, observacion } = req.body;
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({
@@ -105,17 +103,14 @@ const createAsiento = async (req, res = response) => {
     }
     try {
         const asiento = await db_postgres.one(
-            //"INSERT INTO cont_asientos (fecha, referencia, documento, observacion, estado) VALUES (CURRENT_TIMESTAMP, $1, $2, $3, $4) RETURNING *",
-            "INSERT INTO cont_asientos (fecha, referencia, documento, observacion, estado) VALUES (CURRENT_DATE, $1, $2, $3, $4) RETURNING *",
-            [referencia, documento, observacion, true]
+            "INSERT INTO cont_asientos (fecha_registro, fecha_asiento, referencia, documento, observacion, estado) VALUES (CURRENT_DATE, $1, $2, $3, $4, $5) RETURNING *",
+            [fecha_asiento, referencia, documento, observacion, true]
         );
 
-        const token = await generarJWT(asiento.id_asiento);
         res.json({
             ok: true,
             msg: "Asiento creado correctamente.",
             asiento,
-            token: token,
         });
     } catch (error) {
         console.log(error);

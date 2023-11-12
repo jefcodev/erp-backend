@@ -46,7 +46,7 @@ const getDetalleAsientoById = async (req, res) => {
     }
 };
 // Obtener un detalle_asiento por su ID_ASIENTO
-const getDetalleAsientosByAsiento = async (req, res) => {
+const getDetallesAsientoByIdAsiento = async (req, res) => {
     try {
         const id_asiento = req.params.asiento;
 
@@ -209,7 +209,7 @@ const updateDetalleAsiento = async (req, res = response) => {
 module.exports = {
     getDetalleAsientos,
     getDetalleAsientoById,
-    getDetalleAsientosByAsiento,
+    getDetallesAsientoByIdAsiento,
     createDetalleAsiento,
     updateDetalleAsiento,
     //deleteDetalleAsiento,

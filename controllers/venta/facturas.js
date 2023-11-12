@@ -211,9 +211,8 @@ const updateFactura = async (req, res = response) => {
 
         /**Logica adicional para hacer automaticamente los pagos en asientos */
         const asiento = await db_postgres.one(
-            //"INSERT INTO cont_asientos (fecha, referencia, documento, observacion, estado) VALUES (CURRENT_TIMESTAMP, $1, $2, $3, $4) RETURNING *",
-            "INSERT INTO cont_asientos (fecha, referencia, documento, observacion, estado) VALUES (CURRENT_DATE, $1, $2, $3, $4) RETURNING *",
-            ["Venta ", facturaExists.codigo, "Generado por el sistema", true]
+            "INSERT INTO cont_asientos (fecha_registro, fecha_asiento, referencia, documento, observacion, estado) VALUES (CURRENT_DATE, CURRENT_DATE, $1, $2, $3, $4) RETURNING *",
+            ["Factura Venta ", facturaExists.codigo, "Generado por el sistema", true]
         );
 
         // ACTIVO - CTA # 8 CAJA CHICA MATRIZ
