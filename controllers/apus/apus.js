@@ -116,9 +116,22 @@ const insertarManoObra = async (capituloId, mano_obra) => {
     );
   }
 };
+const insertarTransporte = async (capituloId, transporte) => {
+  if (transporte && transporte.length > 0) {
+    const valoresTransporte = transporte
+      .map(
+        (transporte) =>
+          `(${capituloId}, '${transporte.codigot}', '${transporte.descripciont}', ${transporte.cantidadt},'${transporte.unidadt}',${transporte.preciot} )`
+      )
+      .join(",");
+    await db_postgres.query(
+      `INSERT INTO apu_transporte (id_capitulo, codigo, descripcion, cantidad, unidad, costo) VALUES ${valoresTransporte}`
+    );
+  }
+};
 
 const createApu = async (req, res) => {
-  const { codigo, nombre, descripcion, rendimiento, unidad , materiales, equipos, mano_obra } =
+  const { codigo, nombre, descripcion, rendimiento, unidad , materiales, equipos, mano_obra, transporte } =
     req.body;
 
   try {
@@ -137,6 +150,8 @@ const createApu = async (req, res) => {
       insertarMateriales(capituloId, materiales),
       insertarEquipos(capituloId, equipos),
       insertarManoObra(capituloId, mano_obra),
+      insertarTransporte(capituloId, transporte),
+
     ]);
 
     res.json({
