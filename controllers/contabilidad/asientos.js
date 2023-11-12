@@ -55,7 +55,7 @@ const getAsientosAll = async (req, res) => {
         console.error(error);
         res.status(500).json({
             ok: false,
-            msg: "Error al obtener las facturas.",
+            msg: "Error al obtener los asientos.",
         });
     }
 };
@@ -124,7 +124,7 @@ const createAsiento = async (req, res = response) => {
 // Actualizar un asiento
 const updateAsiento = async (req, res = response) => {
     const id_asiento = req.params.id;
-    const { referencia, documento, observacion } = req.body;
+    const { fecha_asiento, referencia, observacion } = req.body;
     try {
         const asientoExists = await db_postgres.oneOrNone("SELECT * FROM cont_asientos WHERE id_asiento = $1", [id_asiento]);
         if (!asientoExists) {
@@ -134,8 +134,8 @@ const updateAsiento = async (req, res = response) => {
             });
         }
         const asientoUpdate = await db_postgres.one(
-            "UPDATE cont_asientos SET referencia = $1, documento = $2, observacion = $3 WHERE id_asiento = $4 RETURNING *",
-            [referencia, documento, observacion, id_asiento]
+            "UPDATE cont_asientos SET fecha_asiento = $1, referencia = $2, observacion = $3 WHERE id_asiento = $4 RETURNING *",
+            [fecha_asiento, referencia, observacion, id_asiento]
         );
         res.json({
             ok: true,

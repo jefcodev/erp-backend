@@ -45,6 +45,7 @@ const getDetalleAsientoById = async (req, res) => {
         });
     }
 };
+
 // Obtener un detalle_asiento por su ID_ASIENTO
 const getDetallesAsientoByIdAsiento = async (req, res) => {
     try {
@@ -57,18 +58,38 @@ const getDetallesAsientoByIdAsiento = async (req, res) => {
             });
         }
 
-        const detalle_asientos = await db_postgres.query("SELECT * FROM cont_detalle_asientos WHERE id_asiento = $1", [id_asiento]);
+        const detalles_asiento = await db_postgres.query("SELECT * FROM cont_detalle_asientos WHERE id_asiento = $1", [id_asiento]);
 
-        if (!detalle_asientos) {
+        if (!detalles_asiento) {
             return res.status(404).json({
                 ok: false,
                 msg: "Detalles de Asiento no encontrado.",
             });
         }
 
+        // Calcular la suma total de Debe y Haber
+        const sumaTotalQuery = `
+            SELECT
+                SUM(debe) as total_debe,
+                SUM(haber) as total_haber
+            FROM cont_detalle_asientos
+            WHERE id_asiento = $1
+        `;
+
+        const sumaTotalResult = await db_postgres.query(sumaTotalQuery, [id_asiento]);
+        console.log("SUMAS: ", sumaTotalResult)
+
+        const total_debe = parseFloat(sumaTotalResult[0].total_debe || 0);
+        const total_haber = parseFloat(sumaTotalResult[0].total_haber || 0);
+
+        console.log("Lleva detalle Asiento por id_asiento", detalles_asiento)
+        console.log("SUMA DEBE", total_debe)
+        console.log("SUMA HABER", total_haber)
         res.json({
             ok: true,
-            detalle_asientos,
+            detalles_asiento,
+            total_debe,
+            total_haber,
         });
     } catch (error) {
         console.error(error);
@@ -140,6 +161,7 @@ const createDetalleAsiento = async (req, res = response) => {
             detalle_asientos,
             token: token,
         });
+
     } catch (error) {
         console.log(error);
         res.status(501).json({
