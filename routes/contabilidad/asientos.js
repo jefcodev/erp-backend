@@ -1,47 +1,40 @@
 /*
-    Ruta: /api/asientos
+    Ruta: /api/contabilidad/asientos
 */
 const { Router } = require('express');
 const { check } = require('express-validator');
+const { validarJWT } = require('../../middlewares/validar-jwt');
 const { validarCampos } = require('../../middlewares/validar-campos');
 
-const { getAsientos, createAsiento, getAsientoById, deleteAsiento, updateAsiento } = require('../../controllers/contabilidad/asientos');
-const { validarJWT } = require('../../middlewares/validar-jwt');
+const {
+    getAsientos,
+    getAsientosAll,
+    createAsiento,
+    getAsientoById,
+    deleteAsiento,
+    updateAsiento
+} = require('../../controllers/contabilidad/asientos');
 
 const router = Router();
 
-router.get('/', getAsientos);
-//router.get('/', validarJWT, getAsientos);
-
+// Rutas para obtener asientos
+router.get('/', validarJWT, getAsientos);
+router.get('/all/', validarJWT, getAsientosAll);
 router.get('/:id', getAsientoById);
 
-router.post('/', 
-    /* [   validarJWT,
-        check('nombre', 'El nombre es obligatorio').not().isEmpty(),
-        check('password', 'El password es obligatorio').not().isEmpty(),
-        check('email', 'El email es obligatorio').isEmail(),
-        validarCampos,
-    ],  */
+// Ruta para crear un asiento
+router.post('/', [validarJWT],
     createAsiento
 );
-router.delete('/:id',
-    /* [   validarJWT,
-        check('nombre', 'El nombre es obligatorio').not().isEmpty(),
-        check('password', 'El password es obligatorio').not().isEmpty(),
-        check('email', 'El email es obligatorio').isEmail(),
-        validarCampos,
-    ],  */
-    deleteAsiento
+
+// Ruta para actualizar un asiento
+router.put('/:id', [validarJWT],
+    updateAsiento
 );
 
-router.put('/:id',
-    /* [   validarJWT,
-        check('nombre', 'El nombre es obligatorio').not().isEmpty(),
-        check('password', 'El password es obligatorio').not().isEmpty(),
-        check('email', 'El email es obligatorio').isEmail(),
-        validarCampos,
-    ],  */
-    updateAsiento
+// Ruta para eliminar un asiento
+router.delete('/:id', [validarJWT],
+    deleteAsiento
 );
 
 module.exports = router;

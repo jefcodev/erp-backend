@@ -3,19 +3,61 @@ const { validationResult } = require("express-validator");
 const { generarJWT } = require("../../helpers/jwt");
 const { db_postgres } = require("../../database/config");
 
-// Obtener todos los asientos
+// Obtener todos los asientos con un limite
 const getAsientos = async (req, res) => {
+    console.log("lleva asientos limit")
     try {
-        const asientos = await db_postgres.query("SELECT * FROM cont_asientos ORDER BY id_asiento ASC");
+
+        const desde = Number(req.query.desde) || 0;
+        const limit = Number(req.query.limit);
+        console.log("req: ", req.query)
+        console.log("desde: ", desde)
+        console.log("limit: ", limit)
+
+        const queryAsientos = `SELECT * FROM cont_asientos ORDER BY id_asiento DESC OFFSET $1 LIMIT $2;`;
+        const queryTotalAsientos = `SELECT COUNT(*) FROM cont_asientos;`;
+
+        const [asientos, totalAsientos] = await Promise.all([
+            db_postgres.query(queryAsientos, [desde, limit]),
+            db_postgres.one(queryTotalAsientos),
+        ]);
+
         res.json({
             ok: true,
             asientos,
+            totalAsientos: totalAsientos.count,
         });
     } catch (error) {
         console.error(error);
         res.status(500).json({
             ok: false,
             msg: "Error al obtener los asientos.",
+        });
+    }
+};
+
+// Obtener todos los asientos
+const getAsientosAll = async (req, res) => {
+    console.log("lleva asientos ALL")
+    try {
+        const queryAsientos = `SELECT * FROM cont_asientos ORDER BY id_asiento DESC;`;
+        const queryTotalAsientos = `SELECT COUNT(*) FROM cont_asientos;`;
+
+        const [asientos, totalAsientos] = await Promise.all([
+            db_postgres.query(queryAsientos),
+            db_postgres.one(queryTotalAsientos),
+        ]);
+
+        res.json({
+            ok: true,
+            asientos,
+            totalAsientos: totalAsientos.count,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            ok: false,
+            msg: "Error al obtener las facturas.",
         });
     }
 };
@@ -142,6 +184,7 @@ const deleteAsiento = async (req, res = response) => {
 
 module.exports = {
     getAsientos,
+    getAsientosAll,
     getAsientoById,
     createAsiento,
     updateAsiento,

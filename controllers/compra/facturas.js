@@ -1,11 +1,16 @@
 const { validationResult } = require("express-validator");
 const { db_postgres } = require("../../database/config");
 
-// Obtener todos los facturas con un limite
+// Obtener todas los facturas con un limite
 const getFacturas = async (req, res) => {
+    console.log("lleva facturas limit")
     try {
         const desde = Number(req.query.desde) || 0;
         const limit = Number(req.query.limit);
+        console.log("req: ", req.query)
+        console.log("desde: ", desde)
+        console.log("limit: ", limit)
+
         const queryFacturas = `SELECT * FROM comp_facturas_compras ORDER BY id_factura_compra DESC OFFSET $1 LIMIT $2;`;
         const queryTotalFacturas = `SELECT COUNT(*) FROM comp_facturas_compras;`;
         const [facturas, totalFacturas] = await Promise.all([
@@ -15,7 +20,7 @@ const getFacturas = async (req, res) => {
         res.json({
             ok: true,
             facturas,
-            totalFacturas: totalFacturas.count
+            totalFacturas: totalFacturas.count,
         });
     } catch (error) {
         console.error(error);
