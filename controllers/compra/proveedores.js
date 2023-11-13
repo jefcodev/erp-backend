@@ -263,7 +263,6 @@ const deleteProveedor = async (req, res = response) => {
             msg: `Proveedor ${nuevoEstado ? 'activado' : 'desactivado'} correctamente.`,
             proveedorToggle,
         });
-
     } catch (error) {
         console.log(error);
         res.status(501).json({

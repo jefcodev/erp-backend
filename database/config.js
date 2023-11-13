@@ -3,12 +3,12 @@ const config = {
 
 
     ///Local
-
-    /* host: "localhost",
+/*
+     host: "localhost",
     port: "5432",
-    database: "inveservice-2",
+    database: "inveservicefgl",
     user: "postgres",
-    password: "root" */
+    password: "2023" */
    
     host: 'systemcode.ec',
     port: 5432,
