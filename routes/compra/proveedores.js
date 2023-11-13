@@ -7,8 +7,8 @@ const { validarCampos } = require('../../middlewares/validar-campos');
 
 const {
     getProveedores,
-    getProveedoresSearch,
     getProveedoresAll,
+    getProveedoresSearch,
     getProveedorById,
     getProveedorByIndentificacion,
     createProveedor,
