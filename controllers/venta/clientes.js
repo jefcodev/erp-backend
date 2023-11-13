@@ -187,7 +187,7 @@ const updateCliente = async (req, res = response) => {
     }
 };
 
-// Eliminar un cliente
+// Eliminar o activar un cliente
 const deleteCliente = async (req, res = response) => {
     const id_cliente = req.params.id;
     try {
@@ -198,11 +198,16 @@ const deleteCliente = async (req, res = response) => {
                 msg: "El cliente no existe. Por favor, proporciona un ID de cliente válido.",
             });
         }
-        const clienteDelete = await db_postgres.query("UPDATE vent_clientes SET estado = $1 WHERE id_cliente = $2 RETURNING *", [false, id_cliente]);
+
+        // Cambiar el estado del proveedor
+        const nuevoEstado = !clienteExists.estado; // Cambiar el estado actual al opuesto
+        const query = "UPDATE vent_clientes SET estado = $1 WHERE id_cliente = $2 RETURNING *";
+        const clienteToggle = await db_postgres.query(query, [nuevoEstado, id_cliente]);
+
         res.json({
             ok: true,
-            msg: "Cliente borrado correctamente.",
-            clienteDelete,
+            msg: `Cliente ${nuevoEstado ? 'activado' : 'desactivado'} correctamente.`,
+            clienteToggle,
         });
     } catch (error) {
         console.log(error);

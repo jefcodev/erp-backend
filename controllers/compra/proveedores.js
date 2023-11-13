@@ -241,7 +241,7 @@ const updateProveedor = async (req, res = response) => {
     }
 };
 
-// Eliminar un proveedor
+// Eliminar o activar un proveedor
 const deleteProveedor = async (req, res = response) => {
     const id_proveedor = req.params.id;
     try {
@@ -252,12 +252,18 @@ const deleteProveedor = async (req, res = response) => {
                 msg: "El proveedor no existe. Por favor, proporciona un ID de proveedor válido.",
             });
         }
-        const proveedorDelete = await db_postgres.query("UPDATE comp_proveedores SET estado = $1 WHERE id_proveedor = $2 RETURNING *", [false, id_proveedor]);
+
+        // Cambiar el estado del proveedor
+        const nuevoEstado = !proveedorExists.estado; // Cambiar el estado actual al opuesto
+        const query = "UPDATE comp_proveedores SET estado = $1 WHERE id_proveedor = $2 RETURNING *";
+        const proveedorToggle = await db_postgres.query(query, [nuevoEstado, id_proveedor]);
+
         res.json({
             ok: true,
-            msg: "Proveedor borrado correctamente.",
-            proveedorDelete,
+            msg: `Proveedor ${nuevoEstado ? 'activado' : 'desactivado'} correctamente.`,
+            proveedorToggle,
         });
+
     } catch (error) {
         console.log(error);
         res.status(501).json({

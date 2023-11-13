@@ -1,7 +1,7 @@
 const { validationResult } = require("express-validator");
 const { db_postgres } = require("../../database/config");
 
-// Obtener todas los facturas con un limite
+// Obtener todas los facturas con un límite
 const getFacturas = async (req, res) => {
     console.log("lleva facturas limit")
     try {
@@ -280,8 +280,8 @@ const deleteFactura = async (req, res = response) => {
 
 module.exports = {
     getFacturas,
-    getFacturaById,
     getFacturasAll,
+    getFacturaById,
     createFactura,
     updateFactura,
     deleteFactura,
