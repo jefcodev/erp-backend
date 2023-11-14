@@ -60,9 +60,8 @@ app.use('/api/v1/contabilidad/asientos', require('./routes/contabilidad/asientos
 app.use('/api/v1/contabilidad/detalle-asientos', require('./routes/contabilidad/detalle-asientos'));
 app.use('/api/v1/libro-diario', require('./routes/contabilidad/libro-diario'));
 app.use('/api/v1/libro-mayor', require('./routes/contabilidad/libro-mayor'));
-app.use('/api/v1/balance-general', require('./routes/contabilidad/balance-general'));
-app.use('/api/v1/estado-resultado', require('./routes/contabilidad/estado-resultado'));
-app.use('/api/v1/estado-resultado', require('./routes/contabilidad/estado-resultado'));
+app.use('/api/v1/contabilidad/balance-general', require('./routes/contabilidad/balance-general'));
+app.use('/api/v1/contabilidad/estado-resultado', require('./routes/contabilidad/estado-resultado'));
 
 // Busquedas
 app.use('/api/v1/todo/', require('./routes/busquedas'));
