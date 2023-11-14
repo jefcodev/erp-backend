@@ -131,6 +131,46 @@ const createFactura = async (req, res = response) => {
                 "INSERT INTO cont_pagos (fecha_pago, id_forma_pago, id_factura_venta, abono, observacion, estado) VALUES (CURRENT_DATE, $1, $2, $3, $4, $5) RETURNING *",
                 [id_forma_pago, id_factura_venta, abono, observacion, true]
             );
+
+            /**Logica adicional para hacer automaticamente los asientos */
+            const asiento = await db_postgres.one(
+                "INSERT INTO cont_asientos (fecha_registro, fecha_asiento, referencia, documento, observacion, estado) VALUES (CURRENT_DATE, $1, $2, $3, $4, $5) RETURNING *",
+                [fecha_emision, "Factura (Venta)", codigo, "Generado por el sistema", true]
+            );
+
+            // 1. ACTIVO - CTA # 6 CAJA MATRIZ
+            const detalle_asiento = await db_postgres.one(
+                "INSERT INTO cont_detalle_asientos (id_asiento, id_cuenta, descripcion, documento, debe, haber) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+                [asiento.id_asiento, 6, "CAJA MATRIZ", codigo, abono, 0.00]
+            );
+
+            // 5. EGRESOS - CTA # 98 MATERIALES UTILIZADOS
+            const detalle_asiento2 = await db_postgres.one(
+                "INSERT INTO cont_detalle_asientos (id_asiento, id_cuenta, descripcion, documento, debe, haber) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+                [asiento.id_asiento, 98, "MATERIALES UTILIZADOS", codigo, abono, 0.00]
+            );
+
+            // 1. ACTIVO - CTA # 20 INVENTARIO MATERIA PRIMA
+            const detalle_asiento3 = await db_postgres.one(
+                "INSERT INTO cont_detalle_asientos (id_asiento, id_cuenta, descripcion, documento, debe, haber) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+                [asiento.id_asiento, 20, "INVENTARIO MATERIA PRIMA", codigo, 0.00, abono]
+            );
+
+            // 5. EGRESOS - CTA # 90 VENTA DE BIENES
+            const detalle_asiento4 = await db_postgres.one(
+                "INSERT INTO cont_detalle_asientos (id_asiento, id_cuenta, descripcion, documento, debe, haber) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+                [asiento.id_asiento, 90, "VENTA DE BIENES", codigo, 0.00, abono]
+            );
+            /**FIN */
+
+            // Luego de hacer los asientos actualizamos la factura con el id del asiento creado
+            //const id_asiento = asiento.id_asiento
+            console.log("VAMOS A ASIGAR ID ASIENTO A FACTURA", asiento.id_asiento)
+            facturaUpdate = await db_postgres.one(
+                "UPDATE vent_facturas_ventas SET id_asiento = $1 WHERE id_factura_venta = $2 RETURNING *",
+                [asiento.id_asiento, id_factura_venta]
+            );
+
         } else {
             console.log("SOLO INGRESAR LA FACTURA VENTA")
             factura = await db_postgres.one(
@@ -209,7 +249,7 @@ const updateFactura = async (req, res = response) => {
             );
         }
 
-        /**Logica adicional para hacer automaticamente los pagos en asientos */
+        /**
         const asiento = await db_postgres.one(
             "INSERT INTO cont_asientos (fecha_registro, fecha_asiento, referencia, documento, observacion, estado) VALUES (CURRENT_DATE, CURRENT_DATE, $1, $2, $3, $4) RETURNING *",
             ["Factura Venta ", facturaExists.codigo, "Generado por el sistema", true]
@@ -225,6 +265,38 @@ const updateFactura = async (req, res = response) => {
         const detalle_asiento2 = await db_postgres.one(
             "INSERT INTO cont_detalle_asientos (id_asiento, id_cuenta, descripcion, documento, debe, haber) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
             [asiento.id_asiento, 38, "descripcion", facturaExists.codigo, abono, 0.00]
+        );
+        FIN */
+
+
+        /**Logica adicional para hacer automaticamente los asientos */
+        const asiento = await db_postgres.one(
+            "INSERT INTO cont_asientos (fecha_registro, fecha_asiento, referencia, documento, observacion, estado) VALUES (CURRENT_DATE, $1, $2, $3, $4, $5) RETURNING *",
+            [fecha_emision, "Factura (Venta)", codigo, "Generado por el sistema", true]
+        );
+
+        // 1. ACTIVO - CTA # 6 CAJA MATRIZ
+        const detalle_asiento = await db_postgres.one(
+            "INSERT INTO cont_detalle_asientos (id_asiento, id_cuenta, descripcion, documento, debe, haber) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+            [asiento.id_asiento, 6, "CAJA MATRIZ", codigo, abono, 0.00]
+        );
+
+        // 5. EGRESOS - CTA # 98 MATERIALES UTILIZADOS
+        const detalle_asiento2 = await db_postgres.one(
+            "INSERT INTO cont_detalle_asientos (id_asiento, id_cuenta, descripcion, documento, debe, haber) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+            [asiento.id_asiento, 98, "MATERIALES UTILIZADOS", codigo, abono, 0.00]
+        );
+
+        // 1. ACTIVO - CTA # 20 INVENTARIO MATERIA PRIMA
+        const detalle_asiento3 = await db_postgres.one(
+            "INSERT INTO cont_detalle_asientos (id_asiento, id_cuenta, descripcion, documento, debe, haber) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+            [asiento.id_asiento, 20, "INVENTARIO MATERIA PRIMA", codigo, 0.00, abono]
+        );
+
+        // 5. EGRESOS - CTA # 90 VENTA DE BIENES
+        const detalle_asiento4 = await db_postgres.one(
+            "INSERT INTO cont_detalle_asientos (id_asiento, id_cuenta, descripcion, documento, debe, haber) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+            [asiento.id_asiento, 90, "VENTA DE BIENES", codigo, 0.00, abono]
         );
         /**FIN */
 
