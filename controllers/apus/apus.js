@@ -1,7 +1,7 @@
 const { response } = require("express");
 const { db_postgres } = require("../../database/config");
 
-/* const getApus = async (req, res = response) => {
+const getApus = async (req, res = response) => {
   try {
     const apusQuery = await db_postgres.query(` SELECT * FROM apu_capitulo`);
 
@@ -16,63 +16,53 @@ const { db_postgres } = require("../../database/config");
       mensaje: "Error en el servidor",
     });
   }
-};  */
+}; 
 
-const getApus = async (req, res) => {
+
+const getApuDetalle = async (req, res = response) => {
     try {
-      const codigoCapitulo = 'CAP-010'; // Reemplaza con el código deseado
+      // Suponemos que tienes un parámetro en la URL para especificar la cabecera de la que deseas obtener el detalle.
+      const cabeceraId = req.params.id; // Asume que está en la URL o en los parámetros de la solicitud.
+        
+
+      const capituloQuery = await db_postgres.query(
+        `SELECT * FROM apu_capitulo WHERE id_capitulo =$1`,[cabeceraId]
+      );
+      // Consulta la base de datos para obtener los detalles de apu_mano_obra relacionados con la cabecera especificada.
+      const manoObraQuery = await db_postgres.query(
+        `SELECT * FROM apu_mano_obra WHERE id_capitulo = $1`,
+        [cabeceraId]
+      );
   
-      // Realiza una consulta SQL para obtener los datos del capítulo
-      const capituloQuery = await db_postgres.query(`
-        SELECT codigo, nombre, descripcion
-        FROM apu_capitulo
-        WHERE codigo = $1
-      `, [codigoCapitulo]);
+      // Consulta la base de datos para obtener los detalles de apu_materiales relacionados con la cabecera especificada.
+      const materialesQuery = await db_postgres.query(
+        `SELECT * FROM apu_materiales WHERE id_capitulo = $1`,
+        [cabeceraId]
+      );
   
-      // Verifica si se encontraron resultados
-      if (capituloQuery && capituloQuery.rows && capituloQuery.rows.length === 0) {
-        return res.status(404).json({ mensaje: "Capítulo no encontrado" });
-      }
+      // Consulta la base de datos para obtener los detalles de apu_equipos relacionados con la cabecera especificada.
+      const equiposQuery = await db_postgres.query(
+        `SELECT * FROM apu_equipos WHERE id_capitulo = $1`,
+        [cabeceraId]
+      );
   
-      // Obtiene los datos del capítulo
-      const capituloData = capituloQuery.rows[0];
-  
-      // Realiza consultas SQL para obtener los datos de materiales, equipos y mano de obra
-      const materialesQuery = await db_postgres.query(`
-        SELECT codigo, descripcion, cantidad, unidad, desperdicio, precio
-        FROM apu_materiales
-        WHERE id_capitulo = $1
-      `, [capituloData.id_capitulo]);
-  
-      const equiposQuery = await db_postgres.query(`
-        SELECT codigo, descripcion, cantidad, unidad, precio
-        FROM apu_equipos
-        WHERE id_capitulo = $1
-      `, [capituloData.id_capitulo]);
-  
-      const manoObraQuery = await db_postgres.query(`
-        SELECT codigo, descripcion, cantidad, unidad, precio
-        FROM apu_mano_obra
-        WHERE id_capitulo = $1
-      `, [capituloData.id_capitulo]);
-  
-      // Formatea los resultados en la estructura deseada
-      const response = {
-        codigo: capituloData.codigo,
-        nombre: capituloData.nombre,
-        descripcion: capituloData.descripcion,
-        materiales: materialesQuery.rows,
-        equipos: equiposQuery.rows,
-        mano_obra: manoObraQuery.rows,
-      };
-  
-      res.json(response);
+      res.json({
+        ok: true,
+        capitulo: capituloQuery,
+        mano_obra: manoObraQuery,
+        materiales: materialesQuery,
+        equipos: equiposQuery,
+      });
     } catch (error) {
       console.error(error);
-      res.status(500).json({ mensaje: "Error en el servidor" });
+      res.status(500).json({
+        ok: false,
+        mensaje: "Error en el servidor",
+      });
     }
   };
   
+
 
 
 const insertarMateriales = async (capituloId, materiales) => {
@@ -169,5 +159,6 @@ const createApu = async (req, res) => {
 
 module.exports = {
   getApus,
-  createApu,
+  getApuDetalle,
+  createApu
 };

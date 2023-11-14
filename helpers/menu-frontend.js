@@ -64,6 +64,7 @@ const getMenuFrontend = (role) => {
         icono: "mdi mdi-file-document-box",
         submenu: [
           { titulo: "APU", url: "apu" },
+          { titulo: "Lista de APU´s", url: "apus" },
           { titulo: "Configuración", url: "" },
         ],
       },
