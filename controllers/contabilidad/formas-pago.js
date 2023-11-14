@@ -1,16 +1,44 @@
-const { response } = require("express");
 const { validationResult } = require("express-validator");
-const { generarJWT } = require("../../helpers/jwt");
 const { db_postgres } = require("../../database/config");
 
 // Obtener todos los formas_pago
 const getFormasPago = async (req, res) => {
     try {
-        const formas_pago = await db_postgres.query("SELECT * FROM cont_formas_pago ORDER BY Codigo ASC");
-
+        const desde = Number(req.query.desde) || 0;
+        const limit = Number(req.query.limit);
+        const query = `SELECT * FROM cont_formas_pago ORDER BY id_forma_pago DESC OFFSET $1 LIMIT $2;`;
+        const queryCount = `SELECT COUNT(*) FROM cont_formas_pago;`;
+        const [formas_pago, total] = await Promise.all([
+            db_postgres.query(query, [desde, limit]),
+            db_postgres.one(queryCount),
+        ]);
         res.json({
             ok: true,
             formas_pago,
+            total: total.count
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            ok: false,
+            msg: "Error al obtener los formas_pago.",
+        });
+    }
+};
+
+// Obtener todos los formas_pago
+const getFormasPagoAll = async (req, res) => {
+    try {
+        const queryAll = `SELECT * FROM cont_formas_pago ORDER BY id_forma_pago DESC;`;
+        const queryCount = `SELECT COUNT(*) FROM cont_formas_pago;`;
+        const [formas_pago, total] = await Promise.all([
+            db_postgres.query(queryAll),
+            db_postgres.one(queryCount),
+        ]);
+        res.json({
+            ok: true,
+            formas_pago,
+            total: total.count
         });
     } catch (error) {
         console.error(error);
@@ -120,12 +148,10 @@ const createFormaPago = async (req, res = response) => {
             "INSERT INTO cont_formas_pago (codigo, descripcion, estado) VALUES ($1, $2, $3) RETURNING *",
             [codigo, descripcion, true]
         );
-        const token = await generarJWT(forma_pago.id_forma_pago);
         res.json({
             ok: true,
             msg: "Forma Pago creado correctamente.",
             forma_pago,
-            token: token,
         });
     } catch (error) {
         console.log(error);
@@ -173,34 +199,41 @@ const updateFormaPago = async (req, res = response) => {
     }
 };
 
-// Eliminar un forma de pago
+// Eliminar o activar una forma de pago
 const deleteFormaPago = async (req, res = response) => {
     const id_forma_pago = req.params.id;
     try {
-        const formaPagoExists = await db_postgres.oneOrNone("SELECT * FROM cont_formas_pago WHERE id_forma_pago = $1", [id_forma_pago]);
-        if (!formaPagoExists) {
+        const forma_pagoExists = await db_postgres.oneOrNone("SELECT * FROM cont_formas_pago WHERE id_forma_pago = $1", [id_forma_pago]);
+        if (!forma_pagoExists) {
             return res.status(400).json({
                 ok: false,
-                msg: "El forma de pago no existe. Por favor, proporciona un ID de forma de pago válido.",
+                msg: "La forma de pago no existe. Por favor, proporciona un ID de forma de pago válido.",
             });
         }
-        const formaPagoDelete = await db_postgres.query("UPDATE cont_formas_pago SET estado = $1 WHERE id_forma_pago = $2 RETURNING *", [false, id_forma_pago]);
+
+        // Cambiar el estado del forma_pago
+        const nuevoEstado = !forma_pagoExists.estado; // Cambiar el estado actual al opuesto
+        const query = "UPDATE cont_formas_pago SET estado = $1 WHERE id_forma_pago = $2 RETURNING *";
+        const forma_pagoToggle = await db_postgres.query(query, [nuevoEstado, id_forma_pago]);
+
         res.json({
             ok: true,
-            msg: "Forma Pago borrado correctamente.",
-            formaPagoDelete,
+            msg: `Forma de Pago ${nuevoEstado ? 'activado' : 'desactivado'} correctamente.`,
+            forma_pagoToggle,
         });
+
     } catch (error) {
         console.log(error);
         res.status(501).json({
             ok: false,
-            msg: "Error al eliminar el forma de pago. Por favor, inténtalo de nuevo.",
+            msg: "Error al eliminar la Forma de Pago. Por favor, inténtalo de nuevo.",
         });
     }
 };
 
 module.exports = {
     getFormasPago,
+    getFormasPagoAll,
     getFormaPagoById,
     getFormaPagoByCodigo,
     createFormaPago,

@@ -2,50 +2,41 @@
     Ruta: /api/cuentas
 */
 const { Router } = require('express');
+const { validarJWT } = require('../../middlewares/validar-jwt');
 const { check } = require('express-validator');
 const { validarCampos } = require('../../middlewares/validar-campos');
 
-const { getCuentas, createCuenta, getCuentaById, getCuentaByCodigo, deleteCuenta, updateCuenta } = require('../../controllers/contabilidad/cuentas');
-const { validarJWT } = require('../../middlewares/validar-jwt');
-
-
+const {
+    getCuentas,
+    getCuentasAll,
+    getCuentaById,
+    getCuentaByCodigo,
+    createCuenta,
+    updateCuenta,
+    deleteCuenta,
+} = require('../../controllers/contabilidad/cuentas');
 
 const router = Router();
 
-
+// Rutas para obtener cuentas
 router.get('/', validarJWT, getCuentas);
-router.post('/', validarJWT,
-    /* [   validarJWT,
-        check('nombre', 'El nombre es obligatorio').not().isEmpty(),
-        check('password', 'El password es obligatorio').not().isEmpty(),
-        check('email', 'El email es obligatorio').isEmail(),
-        validarCampos,
-    ],  */
-    createCuenta
-);
-router.delete('/:id',
-    /* [   validarJWT,
-        check('nombre', 'El nombre es obligatorio').not().isEmpty(),
-        check('password', 'El password es obligatorio').not().isEmpty(),
-        check('email', 'El email es obligatorio').isEmail(),
-        validarCampos,
-    ],  */
-    deleteCuenta
-);
-
-router.put('/:id',
-    /* [   validarJWT,
-        check('nombre', 'El nombre es obligatorio').not().isEmpty(),
-        check('password', 'El password es obligatorio').not().isEmpty(),
-        check('email', 'El email es obligatorio').isEmail(),
-        validarCampos,
-    ],  */
-    updateCuenta
-);
-
+router.get('/all/', validarJWT, getCuentasAll);
 router.get('/id/:id', getCuentaById);
 router.get('/codigo/:codigo', getCuentaByCodigo);
 
+// Ruta para crear una cuenta
+router.post('/', [validarJWT],
+    createCuenta
+);
 
+// Ruta para actualizar una cuenta
+router.put('/:id', [validarJWT],
+    updateCuenta
+);
+
+// Ruta para eliminar una cuenta
+router.delete('/:id', [validarJWT],
+    deleteCuenta
+);
 
 module.exports = router;

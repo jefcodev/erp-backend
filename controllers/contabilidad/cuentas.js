@@ -1,22 +1,59 @@
-const { response } = require("express");
 const { validationResult } = require("express-validator");
-const { generarJWT } = require("../../helpers/jwt");
 const { db_postgres } = require("../../database/config");
 
-// Obtener todos los cuentas
+// Obtener todas las cuentas con un límite
 const getCuentas = async (req, res) => {
+    console.log("lleva cuentas limit")
     try {
-        const cuentas = await db_postgres.query("SELECT * FROM cont_cuentas ORDER BY Codigo ASC");
+        //const cuentas = await db_postgres.query("SELECT * FROM cont_cuentas ORDER BY Codigo ASC");
+        const desde = Number(req.query.desde) || 0;
+        const limit = Number(req.query.limit);
+        console.log("req: ", req.query)
+        console.log("desde: ", desde)
+        console.log("limit: ", limit)
 
+        const queryCuentas = `SELECT * FROM cont_cuentas ORDER BY codigo ASC OFFSET $1 LIMIT $2;`;
+        const queryTotalCuentas = `SELECT COUNT(*) FROM cont_cuentas;`;
+        const [cuentas, totalCuentas] = await Promise.all([
+            db_postgres.query(queryCuentas, [desde, limit]),
+            db_postgres.one(queryTotalCuentas),
+        ]);
         res.json({
             ok: true,
             cuentas,
+            totalCuentas: totalCuentas.count,
         });
     } catch (error) {
         console.error(error);
         res.status(500).json({
             ok: false,
             msg: "Error al obtener los cuentas.",
+        });
+    }
+};
+
+// Obtener todos los cuentas
+const getCuentasAll = async (req, res) => {
+    try {
+        const queryCuentas = `SELECT * FROM cont_cuentas ORDER BY codigo ASC;`;
+        const queryTotalCuentas = `SELECT COUNT(*) FROM cont_cuentas;`;
+
+        const [cuentas, totalCuentas] = await Promise.all([
+            db_postgres.query(queryCuentas),
+            db_postgres.one(queryTotalCuentas),
+        ]);
+
+
+        res.json({
+            ok: true,
+            cuentas,
+            totalCuentas: totalCuentas.count,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            ok: false,
+            msg: "Error al obtener las cuentas.",
         });
     }
 };
@@ -53,7 +90,7 @@ const getCuentaById = async (req, res) => {
 
 const getCuentaByCodigo = async (req, res) => {
     try {
-        
+
         const codigo = req.params.codigo;
         console.log("getCuentaByCodigo")
         console.log("codigo")
@@ -80,7 +117,7 @@ const getCuentaByCodigo = async (req, res) => {
                 msg: "Cuenta no encontrado.",
             });
         }
-
+        console.log("Lleva cuenta:", cuenta)
         res.json({
             ok: true,
             cuenta: cuenta,
@@ -117,12 +154,10 @@ const createCuenta = async (req, res = response) => {
             "INSERT INTO cont_cuentas (codigo, descripcion, cuenta_padre, estado) VALUES ($1, $2, $3, $4) RETURNING *",
             [codigo, descripcion, cuenta_padre, true]
         );
-        const token = await generarJWT(cuenta.id_cuenta);
         res.json({
             ok: true,
             msg: "Cuenta creado correctamente.",
             cuenta,
-            token: token,
         });
     } catch (error) {
         console.log(error);
@@ -170,7 +205,7 @@ const updateCuenta = async (req, res = response) => {
     }
 };
 
-// Eliminar un cuenta
+// Eliminar o activar una cuenta
 const deleteCuenta = async (req, res = response) => {
     const id_cuenta = req.params.id;
     try {
@@ -181,24 +216,29 @@ const deleteCuenta = async (req, res = response) => {
                 msg: "El cuenta no existe. Por favor, proporciona un ID de cuenta válido.",
             });
         }
-        const cuentaDelete = await db_postgres.query("UPDATE cont_cuentas SET estado = $1 WHERE id_cuenta = $2 RETURNING *", [false, id_cuenta]);
+        // Cambiar el estado del proveedor
+        const nuevoEstado = !cuentaExists.estado; // Cambiar el estado actual al opuesto
+        const query = "UPDATE cont_cuentas SET estado = $1 WHERE id_cuenta = $2 RETURNING *";
+        const cuentaToggle = await db_postgres.query(query, [nuevoEstado, id_cuenta]);
+
         res.json({
             ok: true,
-            msg: "Cuenta borrado correctamente.",
-            cuentaDelete,
+            msg: `Cuenta ${nuevoEstado ? 'activada' : 'desactivada'} correctamente.`,
+            cuentaToggle,
         });
+
     } catch (error) {
         console.log(error);
         res.status(501).json({
             ok: false,
-            msg: "Error al eliminar el cuenta. Por favor, inténtalo de nuevo.",
+            msg: "Error al eliminar la cuenta. Por favor, inténtalo de nuevo.",
         });
     }
 };
 
 module.exports = {
     getCuentas,
-    //getCuenta,
+    getCuentasAll,
     getCuentaById,
     getCuentaByCodigo,
     createCuenta,

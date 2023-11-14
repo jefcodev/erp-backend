@@ -7,7 +7,7 @@ const { db_postgres } = require("../../database/config");
 const getLibroDiario = async (req, res) => {
     try {
         const libro_diario = await db_postgres.query(
-            "SELECT a.id_asiento, a.fecha, c.codigo, c.descripcion, da.debe, da.haber FROM cont_asientos a JOIN cont_detalle_asientos da ON a.id_asiento = da.id_asiento JOIN CONT_CUENTAS c ON da.id_cuenta = c.ID_CUENTA ORDER BY a.fecha");
+            "SELECT a.id_asiento, a.fecha_asiento, c.codigo, c.descripcion, da.debe, da.haber FROM cont_asientos a JOIN cont_detalle_asientos da ON a.id_asiento = da.id_asiento JOIN CONT_CUENTAS c ON da.id_cuenta = c.ID_CUENTA ORDER BY a.fecha_asiento");
         res.json({
             ok: true,
             libro_diario,
