@@ -121,14 +121,14 @@ const insertarTransporte = async (capituloId, transporte) => {
 };
 
 const createApu = async (req, res) => {
-  const { codigo, nombre, descripcion, rendimiento, unidad , materiales, equipos, mano_obra, transporte } =
+  const { codigo, nombre, descripcion, rendimiento, unidad , total,materiales, equipos, mano_obra, transporte } =
     req.body;
 
   try {
     const apu_capitulo = await db_postgres.query(
-      `INSERT INTO apu_capitulo (codigo, nombre, descripcion, rendimiento, unidad) 
-            VALUES ($1, $2, $3, $4, $5) RETURNING id_capitulo`,
-      [codigo, nombre, descripcion, rendimiento, unidad]
+      `INSERT INTO apu_capitulo (codigo, nombre, descripcion, rendimiento, unidad, total) 
+            VALUES ($1, $2, $3, $4, $5, $6) RETURNING id_capitulo`,
+      [codigo, nombre, descripcion, rendimiento, unidad, total]
     );
 
     let capituloId;

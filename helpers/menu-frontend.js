@@ -39,6 +39,7 @@ const getMenuFrontend = (role) => {
           { titulo: "Facturas Venta", url: "facturas-ventas" },
           { titulo: "Facturación Electrónica", url: "" },
           { titulo: "Proformas", url: "quotation" },
+          { titulo: "Lista de Proformas", url: "quotations" },
           { titulo: "Punto de Venta", url: "" },
           { titulo: "Ingresos", url: "" },
         ],
