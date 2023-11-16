@@ -111,8 +111,6 @@ const getProveedorById = async (req, res) => {
 const getProveedorByIndentificacion = async (req, res) => {
     try {
         const identificacion = req.params.identificacion;
-        console.log('🟩 LLEGA BUSCAR PROVEEDOR: ', identificacion)
-
         if (!identificacion) {
             return res.status(400).json({
                 ok: false,
@@ -130,8 +128,6 @@ const getProveedorByIndentificacion = async (req, res) => {
             ok: true,
             proveedor,
         });
-        console.log('🟩 sale: ', proveedor)
-
     } catch (error) {
         console.error(error);
         res.status(500).json({
@@ -144,7 +140,6 @@ const getProveedorByIndentificacion = async (req, res) => {
 // Crear un nuevo proveedor
 const createProveedor = async (req, res = response) => {
     const { identificacion, razon_social, nombre_comercial, direccion, telefono, email, tipo_contribuyente, regimen, categoria, obligado_contabilidad, agente_retención, contribuyente_especial } = req.body;
-    console.log('🟩 LLEGA CREAR PROVEEDOR: ')
     /*const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({
@@ -153,23 +148,15 @@ const createProveedor = async (req, res = response) => {
             msg: "Datos no válidos. Por favor, verifica los campos.",
         });
     }*/
-    console.log('IDENTIFICACION: ', identificacion)
-    console.log('RAZON SOCIAL: ', razon_social)
-    console.log('DIRECCION: ', direccion)
-    console.log('telefono 0: ', telefono)
 
     let nuevoTelefono = telefono; // Crear una nueva variable para 'telefono'
     let nuevoEmail = email; // Crear una nueva variable para 'email'
 
     if (telefono === '0') {
         // Asignar un valor nulo o vacío a 'nuevoTelefono' y 'nuevoEmail' cuando 'telefono' sea '0'
-        console.log('ENTRAAAAAAAAAAA')
         nuevoTelefono = null;
         nuevoEmail = null;
     }
-    console.log('telefono: ', nuevoTelefono)
-    console.log('email: ', nuevoEmail)
-
     try {
 
         const identificacionExists = await db_postgres.oneOrNone("SELECT * FROM comp_proveedores WHERE identificacion = $1", [identificacion]);
