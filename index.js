@@ -42,8 +42,8 @@ app.use('/api/v1/detalles-compras', require('./routes/compra/detalles-compras'))
 
 // Ventas
 app.use('/api/v1/clientes', require('./routes/venta/clientes'));
-app.use('/api/v1/facturas-ventas', require('./routes/venta/facturas-ventas'));
-app.use('/api/v1/detalle-facturas-ventas', require('./routes/venta/detalle-facturas-ventas'));
+app.use('/api/v1/ventas', require('./routes/venta/ventas'));
+app.use('/api/v1/detalles-ventas', require('./routes/venta/detalles-ventas'));
 
 // Quoation
 app.use('/api/v1/quotation', require('./routes/quotation/quotations'));

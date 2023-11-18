@@ -98,7 +98,7 @@ const getCompraById = async (req, res) => {
 
 // Crear nueva compra
 const createCompra = async (req, res = response) => {
-    const { id_tipo_comprobante, id_proveedor, id_asiento, id_info_tributaria, clave_acceso, codigo, fecha_emision, fecha_vencimiento, total_sin_impuesto, total_descuento, valor, propina, importe_total, credito_tributario, id_forma_pago, fecha_pago, abono, observacion } = req.body;
+    const { id_tipo_comprobante, id_proveedor, id_info_tributaria, clave_acceso, codigo, fecha_emision, fecha_vencimiento, total_sin_impuesto, total_descuento, valor, propina, importe_total, credito_tributario, id_forma_pago, fecha_pago, abono, observacion } = req.body;
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({
@@ -107,21 +107,13 @@ const createCompra = async (req, res = response) => {
             msg: "Datos no válidos. Por favor, verifica los campos.",
         });
     }
-    console.log('fecha emision: ', fecha_emision)
-    console.log('fecha vencimient: ', fecha_vencimiento)
     try {
         let compra;
         let estado_pago = "PENDIENTE";
 
-        console.log('id forma de pago: ', id_forma_pago)
-        console.log('fecha_pago: ', fecha_pago)
-        console.log('abono: ', abono)
-        console.log('observacion: ', observacion)
         // Solo si llega un abono mayor a cero, hay obervación y forma de pago se hace el pago
         if (!isNaN(abono) && (abono > 0) && (observacion.trim() !== "") && !isNaN(id_forma_pago)) {
             console.log("PAGAR")
-            console.log("id_tipo comrtpo", id_tipo_comprobante)
-            console.log("credito: ", credito_tributario)
             if (importe_total == abono) {
                 estado_pago = "PAGADA";
             }
@@ -131,22 +123,20 @@ const createCompra = async (req, res = response) => {
                 [id_tipo_comprobante, id_proveedor, id_info_tributaria, clave_acceso, codigo, fecha_emision, fecha_vencimiento, estado_pago, total_sin_impuesto, total_descuento, valor, propina, importe_total, abono, credito_tributario, true]
             );
 
-            console.log("444444444444")
-
             /**Logica adicional para hacer automaticamente los asientos */
             const asiento = await db_postgres.one(
                 "INSERT INTO cont_asientos (fecha_registro, fecha_asiento, referencia, documento, observacion, estado) VALUES (CURRENT_DATE, $1, $2, $3, $4, $5) RETURNING *",
                 [fecha_emision, "Compra (Compra)", codigo, "Generado por el sistema", true]
             );
+
             const id_asiento = asiento.id_asiento
-            console.log("55555555555555")
+
             // ACTIVO - CTA # 8 CAJA CHICA MATRIZ
             const detalle_asiento = await db_postgres.one(
                 "INSERT INTO cont_detalles_asientos (id_asiento, id_cuenta, descripcion, documento, debe, haber) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
                 [id_asiento, 8, "CAJA CHICA MATRIZ", codigo, 0.00, abono]
             );
 
-            console.log("666666666666")
             // GASTOS - CTA # 42 PROVEEDORES
             const detalle_asiento2 = await db_postgres.one(
                 "INSERT INTO cont_detalles_asientos (id_asiento, id_cuenta, descripcion, documento, debe, haber) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
@@ -160,7 +150,7 @@ const createCompra = async (req, res = response) => {
                 [id_asiento, id_forma_pago, id_compra, fecha_pago, abono, observacion, true]
             );
         } else {
-            console.log("solo ingresar compra")
+            console.log("SOLO INGRESAR LA FACTURA COMPRA")
             compra = await db_postgres.one(
                 `INSERT INTO public.comp_compras (id_tipo_comprobante, id_proveedor, id_info_tributaria, clave_acceso, codigo, fecha_emision, fecha_vencimiento, estado_pago, total_sin_impuesto, total_descuento, valor, propina, importe_total, credito_tributario, estado)
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *`,
@@ -183,10 +173,9 @@ const createCompra = async (req, res = response) => {
 
 // Actualizar una compra
 const updateCompra = async (req, res = response) => {
-    const id_compra = req.params.id;
-    const { fecha_vencimiento, id_forma_pago, fecha_pago, abono, observacion } = req.body;
-
     try {
+        const id_compra = req.params.id;
+        const { fecha_vencimiento, id_forma_pago, fecha_pago, abono, observacion } = req.body;
         const compraExists = await db_postgres.oneOrNone("SELECT * FROM comp_compras WHERE id_compra = $1", [id_compra]);
 
         if (!compraExists) {
@@ -196,43 +185,46 @@ const updateCompra = async (req, res = response) => {
             });
         }
 
-        // solo para actualizar la fecha vencimiento si no hay abono
         const abono1 = parseFloat(abono) || 0;
         const abono2 = parseFloat(compraExists.abono) || 0;
 
         let abono_sumado = 0;
         let compraUpdate;
+        const codigo = compraExists.codigo
 
         // Solo si llega un abono mayor a cero, hay obervación y forma de pago se hace el pago
         if (!isNaN(abono1) && (abono1 > 0) && !isNaN(id_forma_pago) && (fecha_pago !== null) && (observacion.trim() !== "")) {
-            //if ((!isNaN(abono1) && !isNaN(abono2)) && (abono1 > 0) && (observacion.trim() !== "")) {
+
+            console.log("PAGAR")
             abono_sumado = abono1 + abono2;
             let estado_pago = "PENDIENTE";
             if (compraExists.importe_total == abono_sumado) {
                 estado_pago = "PAGADA";
             }
+
             compraUpdate = await db_postgres.one(
                 "UPDATE comp_compras SET fecha_vencimiento = $1, estado_pago = $2, abono = $3 WHERE id_compra = $4 RETURNING *",
                 [fecha_vencimiento, estado_pago, abono_sumado, id_compra]
             );
 
-
-            /**Logica adicional para hacer automaticamente los pagos en asientos */
+            /**Logica adicional para hacer automaticamente los asientos */
             const asiento = await db_postgres.one(
-                "INSERT INTO cont_asientos (fecha_registro, fecha_asiento, referencia, documento, observacion, estado) VALUES (CURRENT_DATE, CURRENT_DATE, $1, $2, $3, $4) RETURNING *",
-                ["Compra (Compra)", compraExists.codigo, "Generado por el sistema", true]
+                "INSERT INTO cont_asientos (fecha_registro, fecha_asiento, referencia, documento, observacion, estado) VALUES (CURRENT_DATE, $1, $2, $3, $4, $5) RETURNING *",
+                [fecha_pago, "Compra (Compra)", codigo, "Generado por el sistema", true]
             );
+
             const id_asiento = asiento.id_asiento;
+
             // ACTIVO - CTA # 8 CAJA CHICA MATRIZ
             const detalle_asiento = await db_postgres.one(
                 "INSERT INTO cont_detalles_asientos (id_asiento, id_cuenta, descripcion, documento, debe, haber) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
-                [id_asiento, 8, "CAJA CHICA MATRIZ", compraExists.codigo, 0.00, abono]
+                [id_asiento, 8, "CAJA CHICA MATRIZ", codigo, 0.00, abono]
             );
 
             // GASTOS - CTA # 38 PROVEEDORES
             const detalle_asiento2 = await db_postgres.one(
                 "INSERT INTO cont_detalles_asientos (id_asiento, id_cuenta, descripcion, documento, debe, haber) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
-                [id_asiento, 38, "PROVEEDORES", compraExists.codigo, abono, 0.00]
+                [id_asiento, 38, "PROVEEDORES", codigo, abono, 0.00]
             );
             /**FIN */
 
@@ -241,9 +233,9 @@ const updateCompra = async (req, res = response) => {
                 [id_asiento, id_forma_pago, id_compra, fecha_pago, abono, observacion, true]
 
             );
-
         } else if (fecha_vencimiento !== null) {
             // No hay abono, observación o forma de pago válidos, y la fecha_vencimiento no es null, por lo que solo actualizamos fecha_vencimiento
+            console.log("ACTUALIZAR")
             compraUpdate = await db_postgres.one(
                 "UPDATE comp_compras SET fecha_vencimiento = $1 WHERE id_compra = $2 RETURNING *",
                 [fecha_vencimiento, id_compra]

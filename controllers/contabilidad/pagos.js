@@ -157,7 +157,7 @@ const getPagosByIdVenta = async (req, res) => {
 
     console.log("VENTA");
     try {
-        const facturaExists = await db_postgres.oneOrNone("SELECT * FROM vent_facturas_ventas WHERE id_venta = $1", [id_factura]);
+        const facturaExists = await db_postgres.oneOrNone("SELECT * FROM vent_ventas WHERE id_venta = $1", [id_factura]);
         if (!facturaExists) {
             return res.status(400).json({
                 ok: false,

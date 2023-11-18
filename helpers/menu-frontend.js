@@ -26,7 +26,7 @@ const getMenuFrontend = (role) => {
         icono: "mdi mdi-arrow-down-bold-circle-outline",
         submenu: [
           { titulo: "Proveedores", url: "proveedores" },
-          { titulo: "Facturas Compra backend", url: "compras" },
+          { titulo: "Compras", url: "compras" },
           { titulo: "Orden de Compras", url: "" },
           { titulo: "Egresos", url: "" },
         ],
@@ -36,7 +36,7 @@ const getMenuFrontend = (role) => {
         icono: "mdi mdi-arrow-up-bold-circle-outline",
         submenu: [
           { titulo: "Clientes", url: "clientes" },
-          { titulo: "Facturas Venta", url: "facturas-ventas" },
+          { titulo: "Ventas", url: "ventas" },
           { titulo: "Facturación Electrónica", url: "" },
           { titulo: "Proformas", url: "quotation" },
           { titulo: "Lista de Proformas", url: "quotations" },
