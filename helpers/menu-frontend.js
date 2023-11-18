@@ -26,7 +26,7 @@ const getMenuFrontend = (role) => {
         icono: "mdi mdi-arrow-down-bold-circle-outline",
         submenu: [
           { titulo: "Proveedores", url: "proveedores" },
-          { titulo: "Facturas Compra", url: "facturas" },
+          { titulo: "Facturas Compra backend", url: "compras" },
           { titulo: "Orden de Compras", url: "" },
           { titulo: "Egresos", url: "" },
         ],

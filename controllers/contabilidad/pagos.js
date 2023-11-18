@@ -107,8 +107,8 @@ const getPagoById = async (req, res) => {
     }
 };
 
-// Obtener un pago por id factura compra
-const getPagosByIdFacturaCompra = async (req, res) => {
+// Obtener un pago por id compra
+const getPagosByIdCompra = async (req, res) => {
     const id_factura = req.params.id;
 
     console.log('req: ', req.params.factura);
@@ -116,7 +116,7 @@ const getPagosByIdFacturaCompra = async (req, res) => {
 
     console.log("COMPRA");
     try {
-        const facturaExists = await db_postgres.oneOrNone("SELECT * FROM comp_facturas_compras WHERE id_factura_compra = $1", [id_factura]);
+        const facturaExists = await db_postgres.oneOrNone("SELECT * FROM comp_compras WHERE id_compra = $1", [id_factura]);
         if (!facturaExists) {
             return res.status(400).json({
                 ok: false,
@@ -124,7 +124,7 @@ const getPagosByIdFacturaCompra = async (req, res) => {
             });
         }
 
-        const query = `SELECT * FROM cont_pagos WHERE id_factura_compra = $1;`;
+        const query = `SELECT * FROM cont_pagos WHERE id_compra = $1;`;
 
         const pagos = await db_postgres.query(query, [id_factura]);
 
@@ -149,7 +149,7 @@ const getPagosByIdFacturaCompra = async (req, res) => {
 };
 
 // Obtener un pago por id factura venta
-const getPagosByIdFacturaVenta = async (req, res) => {
+const getPagosByIdVenta = async (req, res) => {
     const id_factura = req.params.id;
 
     console.log('req: ', req.params.factura);
@@ -157,7 +157,7 @@ const getPagosByIdFacturaVenta = async (req, res) => {
 
     console.log("VENTA");
     try {
-        const facturaExists = await db_postgres.oneOrNone("SELECT * FROM vent_facturas_ventas WHERE id_factura_venta = $1", [id_factura]);
+        const facturaExists = await db_postgres.oneOrNone("SELECT * FROM vent_facturas_ventas WHERE id_venta = $1", [id_factura]);
         if (!facturaExists) {
             return res.status(400).json({
                 ok: false,
@@ -165,7 +165,7 @@ const getPagosByIdFacturaVenta = async (req, res) => {
             });
         }
 
-        const query = `SELECT * FROM cont_pagos WHERE id_factura_venta = $1;`;
+        const query = `SELECT * FROM cont_pagos WHERE id_venta = $1;`;
 
         const pagos = await db_postgres.query(query, [id_factura]);
 
@@ -287,17 +287,17 @@ const deletePago = async (req, res = response) => {
 
         const abono_pago = parseFloat(pagoExists.abono) || 0;
         console.log("abono bdd: ", abono_pago)
-        const id_factura_compra = (pagoExists.id_factura_compra) || 0;
-        const id_factura_venta = (pagoExists.id_factura_venta) || 0;
+        const id_compra = (pagoExists.id_compra) || 0;
+        const id_venta = (pagoExists.id_venta) || 0;
 
-        console.log("id_factura_compra: ", id_factura_compra)
-        console.log("id_factura_venta: ", id_factura_venta)
+        console.log("id_compra: ", id_compra)
+        console.log("id_venta: ", id_venta)
         let pagoDelete;
         let facturaUpdate;
         let estado_pago;
-        if (id_factura_compra > 0) {
+        if (id_compra > 0) {
 
-            const facturaExists = await db_postgres.oneOrNone("SELECT * FROM comp_facturas_compras WHERE id_factura_compra = $1", [id_factura_compra]);
+            const facturaExists = await db_postgres.oneOrNone("SELECT * FROM comp_compras WHERE id_compra = $1", [id_compra]);
             if (!facturaExists) {
                 return res.status(400).json({
                     ok: false,
@@ -312,15 +312,19 @@ const deletePago = async (req, res = response) => {
                 estado_pago = "PENDIENTE";
             }
             facturaUpdate = await db_postgres.one(
-                "UPDATE comp_facturas_compras SET estado_pago = $1, abono = $2 WHERE id_factura_compra = $3 RETURNING *",
-                [estado_pago, abono_restado, id_factura_compra]
+                "UPDATE comp_compras SET estado_pago = $1, abono = $2 WHERE id_compra = $3 RETURNING *",
+                [estado_pago, abono_restado, id_compra]
             );
-
             pagoDelete = await db_postgres.query("UPDATE cont_pagos SET estado = $1 WHERE id_pago = $2 RETURNING *", [false, id_pago]);
 
-        } else if (id_factura_venta > 0) {
+            // Eliminamos asiento luego de eliminar el pago 
+            const id_asiento = pagoExists.id_asiento;
+            console.log("🟩 id_asiento: ",id_asiento)
+            const asientoDelete = await db_postgres.query("UPDATE cont_asientos SET estado = $1 WHERE id_asiento = $2 RETURNING *", [false, id_asiento]);
 
-            const facturaExists = await db_postgres.oneOrNone("SELECT * FROM vent_facturas_ventas WHERE id_factura_venta = $1", [id_factura_venta]);
+        } else if (id_venta > 0) {
+
+            const facturaExists = await db_postgres.oneOrNone("SELECT * FROM vent_ventas WHERE id_venta = $1", [id_venta]);
             if (!facturaExists) {
                 return res.status(400).json({
                     ok: false,
@@ -336,8 +340,8 @@ const deletePago = async (req, res = response) => {
             }
 
             facturaUpdate = await db_postgres.one(
-                "UPDATE vent_facturas_ventas SET estado_pago = $1, abono = $2 WHERE id_factura_venta = $3 RETURNING *",
-                [estado_pago, abono_restado, id_factura_venta]
+                "UPDATE vent_ventas SET estado_pago = $1, abono = $2 WHERE id_venta = $3 RETURNING *",
+                [estado_pago, abono_restado, id_venta]
             );
             pagoDelete = await db_postgres.query("UPDATE cont_pagos SET estado = $1 WHERE id_pago = $2 RETURNING *", [false, id_pago]);
         }
@@ -361,8 +365,8 @@ module.exports = {
     getPagosSearch,
     getPagosAll,
     getPagoById,
-    getPagosByIdFacturaCompra,
-    getPagosByIdFacturaVenta,
+    getPagosByIdCompra,
+    getPagosByIdVenta,
     createPago,
     updatePago,
     deletePago,

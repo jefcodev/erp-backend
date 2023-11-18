@@ -1,5 +1,5 @@
 /*
-    Ruta: /api/facturas
+    Ruta: /api/compras
 */
 const { Router } = require('express');
 const { validarJWT } = require('../../middlewares/validar-jwt');
@@ -7,34 +7,34 @@ const { check } = require('express-validator');
 const { validarCampos } = require('../../middlewares/validar-campos');
 
 const {
-    getFacturas,
-    getFacturasAll,
-    getFacturaById,
-    createFactura,
-    updateFactura,
-    deleteFactura,
-} = require('../../controllers/compra/facturas');
+    getCompras,
+    getComprasAll,
+    getCompraById,
+    createCompra,
+    updateCompra,
+    deleteCompra,
+} = require('../../controllers/compra/compras');
 
 const router = Router();
 
-// Rutas para obtener facturas
-router.get('/', validarJWT, getFacturas);
-router.get('/all/', validarJWT, getFacturasAll);
-router.get('/:id', validarJWT, getFacturaById);
+// Rutas para obtener compras
+router.get('/', validarJWT, getCompras);
+router.get('/all/', validarJWT, getComprasAll);
+router.get('/:id', validarJWT, getCompraById);
 
 // Ruta para crear una factura
 router.post('/', [validarJWT],
-    createFactura
+    createCompra
 );
 
 // Ruta para actualizar una factura
 router.put('/:id', [validarJWT],
-    updateFactura
+    updateCompra
 );
 
 // Ruta para eliminar una factura
 router.delete('/:id', [validarJWT],
-    deleteFactura
+    deleteCompra
 );
 
 module.exports = router;

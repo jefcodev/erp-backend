@@ -153,8 +153,9 @@ const updateAsiento = async (req, res = response) => {
 
 // Eliminar un asiento
 const deleteAsiento = async (req, res = response) => {
-    const id_asiento = req.params.id;
     try {
+        const id_asiento = req.params.id;
+        console.log("id_asiento: ", id_asiento)
         const asientoExists = await db_postgres.oneOrNone("SELECT * FROM cont_asientos WHERE id_asiento = $1", [id_asiento]);
         if (!asientoExists) {
             return res.status(400).json({
@@ -163,6 +164,19 @@ const deleteAsiento = async (req, res = response) => {
             });
         }
         const asientoDelete = await db_postgres.query("UPDATE cont_asientos SET estado = $1 WHERE id_asiento = $2 RETURNING *", [false, id_asiento]);
+
+        // Eliminamos pago luego de eliminar el asiento 
+        //const id_asiento = asientoExists.id_asiento;
+        console.log("🟩 id_asiento: ", id_asiento)
+
+        const pagoExists = await db_postgres.oneOrNone("SELECT * FROM cont_pagos WHERE id_asiento = $1", [id_asiento]);
+        const id_pago = pagoExists.id_pago
+        console.log("id_pago", id_pago)
+        if (pagoExists) {
+            console.log("Si exite un asiento con un pago")
+            pagoDelete = await db_postgres.query("UPDATE cont_pagos SET estado = $1 WHERE id_pago = $2 RETURNING *", [false, id_pago]);
+        }
+
         res.json({
             ok: true,
             msg: "Asiento borrado correctamente.",

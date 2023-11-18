@@ -37,8 +37,8 @@ app.use('/api/v1/purchase', require('./routes/purchase/purchases'));
 
 // Compras
 app.use('/api/v1/proveedores', require('./routes/compra/proveedores'));
-app.use('/api/v1/facturas', require('./routes/compra/facturas'));
-app.use('/api/v1/detalle-facturas', require('./routes/compra/detalle-facturas'));
+app.use('/api/v1/compras', require('./routes/compra/compras'));
+app.use('/api/v1/detalles-compras', require('./routes/compra/detalles-compras'));
 
 // Ventas
 app.use('/api/v1/clientes', require('./routes/venta/clientes'));
@@ -53,6 +53,7 @@ app.use('/api/v1/apu', require('./routes/apu/apus'));
 
 // Contabilidad
 app.use('/api/v1/contabilidad/cuentas', require('./routes/contabilidad/cuentas'));
+app.use('/api/v1/contabilidad/tipos-comprobantes', require('./routes/contabilidad/tipos-comprobantes'));
 app.use('/api/v1/pagos', require('./routes/contabilidad/pagos'));
 app.use('/api/v1/formas-pago', require('./routes/contabilidad/formas-pago'));
 app.use('/api/v1/tarifas-iva', require('./routes/contabilidad/tarifas-iva'));
