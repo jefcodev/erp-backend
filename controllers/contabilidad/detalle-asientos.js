@@ -6,7 +6,7 @@ const { db_postgres } = require("../../database/config");
 // Obtener todos los detalle_asientos
 const getDetalleAsientos = async (req, res) => {
     try {
-        const detalle_asientos = await db_postgres.query("SELECT * FROM cont_detalle_asientos ORDER BY id_detalle_asiento ASC");
+        const detalle_asientos = await db_postgres.query("SELECT * FROM cont_detalles_asientos ORDER BY id_detalle_asiento ASC");
 
         res.json({
             ok: true,
@@ -26,7 +26,7 @@ const getDetalleAsientoById = async (req, res) => {
     try {
         const id_detalle_asiento = req.params.id;
 
-        const detalle_asiento = await db_postgres.query("SELECT * FROM cont_detalle_asientos WHERE id_detalle_asiento = $1", [id_detalle_asiento]);
+        const detalle_asiento = await db_postgres.query("SELECT * FROM cont_detalles_asientos WHERE id_detalle_asiento = $1", [id_detalle_asiento]);
         if (!detalle_asiento) {
             return res.status(404).json({
                 ok: false,
@@ -58,7 +58,7 @@ const getDetallesAsientoByIdAsiento = async (req, res) => {
             });
         }
 
-        const detalles_asiento = await db_postgres.query("SELECT * FROM cont_detalle_asientos WHERE id_asiento = $1", [id_asiento]);
+        const detalles_asiento = await db_postgres.query("SELECT * FROM cont_detalles_asientos WHERE id_asiento = $1", [id_asiento]);
 
         if (!detalles_asiento) {
             return res.status(404).json({
@@ -72,7 +72,7 @@ const getDetallesAsientoByIdAsiento = async (req, res) => {
             SELECT
                 SUM(debe) as total_debe,
                 SUM(haber) as total_haber
-            FROM cont_detalle_asientos
+            FROM cont_detalles_asientos
             WHERE id_asiento = $1
         `;
 
@@ -115,7 +115,7 @@ const createDetalleAsiento2 = async (req, res = response) => {
     }
     try {
         const detalle_asiento = await db_postgres.one(
-            "INSERT INTO cont_detalle_asientos (id_asiento, id_cuenta, descripcion, documento, debe, haber) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+            "INSERT INTO cont_detalles_asientos (id_asiento, id_cuenta, descripcion, documento, debe, haber) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
             [id_asiento, id_cuenta, descripcion, documento, debe, haber]
         );
 
@@ -145,7 +145,7 @@ const createDetalleAsiento = async (req, res = response) => {
             const { id_asiento, id_cuenta, descripcion, documentod, debe, haber } = detalle;
 
             const detalle_asiento = await db_postgres.one(
-                "INSERT INTO cont_detalle_asientos (id_asiento, id_cuenta, descripcion, documento, debe, haber) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+                "INSERT INTO cont_detalles_asientos (id_asiento, id_cuenta, descripcion, documento, debe, haber) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
                 [id_asiento, id_cuenta, descripcion, documentod, debe, haber]
             );
 
@@ -177,7 +177,7 @@ const updateDetalleAsiento = async (req, res = response) => {
     const id_detalle_asiento = req.params.id;
     const { descripcion } = req.body;
     try {
-        const asientoExists = await db_postgres.oneOrNone("SELECT * FROM cont_detalle_asientos WHERE id_detalle_asiento = $1", [id_detalle_asiento]);
+        const asientoExists = await db_postgres.oneOrNone("SELECT * FROM cont_detalles_asientos WHERE id_detalle_asiento = $1", [id_detalle_asiento]);
         if (!asientoExists) {
             return res.status(400).json({
                 ok: false,
@@ -185,7 +185,7 @@ const updateDetalleAsiento = async (req, res = response) => {
             });
         }
         const asientoUpdate = await db_postgres.one(
-            "UPDATE cont_detalle_asientos SET descripcion = $1 WHERE id_detalle_asiento = $2 RETURNING *",
+            "UPDATE cont_detalles_asientos SET descripcion = $1 WHERE id_detalle_asiento = $2 RETURNING *",
             [descripcion, id_detalle_asiento]
         );
         res.json({
@@ -206,14 +206,14 @@ const updateDetalleAsiento = async (req, res = response) => {
 /*const deleteDetalleAsiento = async (req, res = response) => {
     const id_detalle_asiento = req.params.id;
     try {
-        const asientoExists = await db_postgres.oneOrNone("SELECT * FROM cont_detalle_asientos WHERE id_detalle_asiento = $1", [id_detalle_asiento]);
+        const asientoExists = await db_postgres.oneOrNone("SELECT * FROM cont_detalles_asientos WHERE id_detalle_asiento = $1", [id_detalle_asiento]);
         if (!asientoExists) {
             return res.status(400).json({
                 ok: false,
                 msg: "El detalle_asiento no existe. Por favor, proporciona un ID de detalle_asiento válido.",
             });
         }
-        const asientoDelete = await db_postgres.query("UPDATE cont_detalle_asientos SET estado = $1 WHERE id_detalle_asiento = $2 RETURNING *", [false, id_detalle_asiento]);
+        const asientoDelete = await db_postgres.query("UPDATE cont_detalles_asientos SET estado = $1 WHERE id_detalle_asiento = $2 RETURNING *", [false, id_detalle_asiento]);
         res.json({
             ok: true,
             msg: "Detalle Asiento borrado correctamente.",

@@ -15,7 +15,7 @@ const getEstadoResultadoFecha = async (req, res) => {
                     ELSE SUM(da.HABER) - SUM(da.DEBE) 
                 END AS SALDO 
             FROM CONT_CUENTAS c  
-                LEFT JOIN CONT_DETALLE_ASIENTOS da ON c.ID_CUENTA = da.ID_CUENTA 
+                LEFT JOIN CONT_DETALLES_ASIENTOS da ON c.ID_CUENTA = da.ID_CUENTA 
                 LEFT JOIN CONT_ASIENTOS a ON da.ID_ASIENTO = a.ID_ASIENTO
             WHERE (c.CODIGO LIKE '4%' OR c.CODIGO LIKE '5%' OR c.CODIGO LIKE '6%')  
                 AND (a.FECHA_ASIENTO BETWEEN $1 AND $2)
@@ -60,7 +60,7 @@ const getSumaIEGFecha = async (req, res) => {
                 ABS(SUM(CASE WHEN c.CODIGO LIKE '5%' THEN da.HABER - da.DEBE ELSE 0 END)) AS Egresos,
                 SUM(CASE WHEN c.CODIGO LIKE '6%' THEN da.HABER - da.DEBE ELSE 0 END) AS Gastos
             FROM CONT_CUENTAS c
-            LEFT JOIN CONT_DETALLE_ASIENTOS da ON c.ID_CUENTA = da.ID_CUENTA
+            LEFT JOIN CONT_DETALLES_ASIENTOS da ON c.ID_CUENTA = da.ID_CUENTA
             LEFT JOIN CONT_ASIENTOS a ON da.ID_ASIENTO = a.ID_ASIENTO
             WHERE (c.CODIGO LIKE '4%' OR c.CODIGO LIKE '5%' OR c.CODIGO LIKE '6%')  
             AND (a.FECHA_ASIENTO BETWEEN $1 AND $2)
@@ -89,7 +89,7 @@ const getEstadoResultado = async (req, res) => {
             `
             SELECT c.ID_CUENTA, c.CODIGO, c.DESCRIPCION, SUM(da.DEBE) - SUM(da.HABER) AS SALDO 
             FROM CONT_CUENTAS c  
-            LEFT JOIN CONT_DETALLE_ASIENTOS da ON c.ID_CUENTA = da.ID_CUENTA 
+            LEFT JOIN CONT_DETALLES_ASIENTOS da ON c.ID_CUENTA = da.ID_CUENTA 
             WHERE c.CODIGO LIKE '4%' OR c.CODIGO LIKE '5%' OR c.CODIGO LIKE '6%'  
             GROUP BY c.ID_CUENTA, c.CODIGO, c.DESCRIPCION  
             HAVING SUM(da.DEBE) - SUM(da.HABER) IS NOT NULL  
@@ -126,7 +126,7 @@ const getSumaIEG = async (req, res) => {
             "SUM(CASE WHEN c.CODIGO LIKE '5%' THEN da.DEBE - da.HABER ELSE 0 END) AS Egreso, " +
             "SUM(CASE WHEN c.CODIGO LIKE '6%' THEN da.DEBE - da.HABER ELSE 0 END) AS Gasto " +
             "FROM CONT_CUENTAS c " +
-            "LEFT JOIN CONT_DETALLE_ASIENTOS da ON c.ID_CUENTA = da.ID_CUENTA " +
+            "LEFT JOIN CONT_DETALLES_ASIENTOS da ON c.ID_CUENTA = da.ID_CUENTA " +
             "WHERE c.CODIGO LIKE '4%' OR c.CODIGO LIKE '5%' OR c.CODIGO LIKE '6%'"
         );
         res.json({

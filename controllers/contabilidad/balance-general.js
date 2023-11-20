@@ -19,7 +19,7 @@ const getBalanceGeneralFecha = async (req, res) => {
                     WHEN c.CODIGO LIKE '3%' THEN SUM(da.HABER) - SUM(da.DEBE)
                 END AS SALDO
             FROM CONT_CUENTAS c
-            LEFT JOIN CONT_DETALLE_ASIENTOS da ON c.ID_CUENTA = da.ID_CUENTA
+            LEFT JOIN CONT_DETALLES_ASIENTOS da ON c.ID_CUENTA = da.ID_CUENTA
             LEFT JOIN CONT_ASIENTOS a ON da.ID_ASIENTO = a.ID_ASIENTO
             WHERE (c.CODIGO LIKE '1%' OR c.CODIGO LIKE '2%' OR c.CODIGO LIKE '3%')
             AND (a.FECHA_ASIENTO BETWEEN $1 AND $2)
@@ -69,7 +69,7 @@ const getSumaAPPFecha = async (req, res) => {
                 ABS(SUM(CASE WHEN c.CODIGO LIKE '2%' THEN da.DEBE - da.HABER ELSE 0 END)) AS Pasivo, 
                 SUM(CASE WHEN c.CODIGO LIKE '3%' THEN da.HABER - da.DEBE ELSE 0 END) AS Patrimonio 
             FROM CONT_CUENTAS c 
-            LEFT JOIN CONT_DETALLE_ASIENTOS da ON c.ID_CUENTA = da.ID_CUENTA 
+            LEFT JOIN CONT_DETALLES_ASIENTOS da ON c.ID_CUENTA = da.ID_CUENTA 
             LEFT JOIN CONT_ASIENTOS a ON da.ID_ASIENTO = a.ID_ASIENTO
             WHERE (c.CODIGO LIKE '1%' OR c.CODIGO LIKE '2%' OR c.CODIGO LIKE '3%')
             AND (a.FECHA_ASIENTO BETWEEN $1 AND $2)
@@ -95,10 +95,10 @@ const getSumaAPPFecha = async (req, res) => {
 const getBalanceGeneral = async (req, res) => {
     try {
         const balance_general = await db_postgres.query(
-            //"SELECT c.ID_CUENTA, c.CODIGO, c.DESCRIPCION, SUM(da.DEBE) - SUM(da.HABER) AS SALDO FROM CONT_CUENTAS c LEFT JOIN CONT_DETALLE_ASIENTOS da ON c.ID_CUENTA = da.ID_CUENTA WHERE c.CODIGO LIKE '1%' OR c.CODIGO LIKE '2%' OR c.CODIGO LIKE '3%' GROUP BY c.ID_CUENTA, c.CODIGO, c.DESCRIPCION HAVING SUM(da.DEBE) - SUM(da.HABER) IS NOT NULL UNION SELECT 1, '1', 'ACTIVO', NULL UNION SELECT 2, '2', 'PASIVO', NULL UNION SELECT 3, '3', 'PATRIMONIO', NULL ORDER BY CODIGO ");
+            //"SELECT c.ID_CUENTA, c.CODIGO, c.DESCRIPCION, SUM(da.DEBE) - SUM(da.HABER) AS SALDO FROM CONT_CUENTAS c LEFT JOIN CONT_DETALLES_ASIENTOS da ON c.ID_CUENTA = da.ID_CUENTA WHERE c.CODIGO LIKE '1%' OR c.CODIGO LIKE '2%' OR c.CODIGO LIKE '3%' GROUP BY c.ID_CUENTA, c.CODIGO, c.DESCRIPCION HAVING SUM(da.DEBE) - SUM(da.HABER) IS NOT NULL UNION SELECT 1, '1', 'ACTIVO', NULL UNION SELECT 2, '2', 'PASIVO', NULL UNION SELECT 3, '3', 'PATRIMONIO', NULL ORDER BY CODIGO ");
             "SELECT c.ID_CUENTA, c.CODIGO, c.DESCRIPCION, SUM(da.DEBE) - SUM(da.HABER) AS SALDO " +
             "FROM CONT_CUENTAS c " +
-            "LEFT JOIN CONT_DETALLE_ASIENTOS da ON c.ID_CUENTA = da.ID_CUENTA " +
+            "LEFT JOIN CONT_DETALLES_ASIENTOS da ON c.ID_CUENTA = da.ID_CUENTA " +
             "WHERE c.CODIGO LIKE '1%' OR c.CODIGO LIKE '2%' OR c.CODIGO LIKE '3%' " +
             "GROUP BY c.ID_CUENTA, c.CODIGO, c.DESCRIPCION " +
             "HAVING SUM(da.DEBE) - SUM(da.HABER) IS NOT NULL " +
@@ -131,7 +131,7 @@ const getSumaAPP = async (req, res) => {
             "SUM(CASE WHEN c.CODIGO LIKE '2%' THEN da.DEBE - da.HABER ELSE 0 END) AS Pasivo, " +
             "SUM(CASE WHEN c.CODIGO LIKE '3%' THEN da.DEBE - da.HABER ELSE 0 END) AS Patrimonio " +
             "FROM CONT_CUENTAS c " +
-            "LEFT JOIN CONT_DETALLE_ASIENTOS da ON c.ID_CUENTA = da.ID_CUENTA " +
+            "LEFT JOIN CONT_DETALLES_ASIENTOS da ON c.ID_CUENTA = da.ID_CUENTA " +
             "WHERE c.CODIGO LIKE '1%' OR c.CODIGO LIKE '2%' OR c.CODIGO LIKE '3%'"
         );
         res.json({
