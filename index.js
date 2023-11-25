@@ -54,15 +54,16 @@ app.use('/api/v1/apu', require('./routes/apu/apus'));
 // Contabilidad
 app.use('/api/v1/contabilidad/cuentas', require('./routes/contabilidad/cuentas'));
 app.use('/api/v1/contabilidad/tipos-comprobantes', require('./routes/contabilidad/tipos-comprobantes'));
-app.use('/api/v1/pagos', require('./routes/contabilidad/pagos'));
-app.use('/api/v1/formas-pago', require('./routes/contabilidad/formas-pago'));
-app.use('/api/v1/tarifas-iva', require('./routes/contabilidad/tarifas-iva'));
+app.use('/api/v1/contabilidad/pagos', require('./routes/contabilidad/pagos'));
+app.use('/api/v1/contabilidad/formas-pago', require('./routes/contabilidad/formas-pago'));
+app.use('/api/v1/contabilidad/tarifas-iva', require('./routes/contabilidad/tarifas-iva'));
 app.use('/api/v1/contabilidad/asientos', require('./routes/contabilidad/asientos'));
 app.use('/api/v1/contabilidad/detalle-asientos', require('./routes/contabilidad/detalle-asientos'));
-app.use('/api/v1/libro-diario', require('./routes/contabilidad/libro-diario'));
-app.use('/api/v1/libro-mayor', require('./routes/contabilidad/libro-mayor'));
+app.use('/api/v1/contabilidad/libro-diario', require('./routes/contabilidad/libro-diario'));
+app.use('/api/v1/contabilidad/libro-mayor', require('./routes/contabilidad/libro-mayor'));
 app.use('/api/v1/contabilidad/balance-general', require('./routes/contabilidad/balance-general'));
 app.use('/api/v1/contabilidad/estado-resultado', require('./routes/contabilidad/estado-resultado'));
+app.use('/api/v1/contabilidad/iva', require('./routes/contabilidad/IVA'));
 
 // Busquedas
 app.use('/api/v1/todo/', require('./routes/busquedas'));
