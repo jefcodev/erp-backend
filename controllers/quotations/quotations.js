@@ -2,7 +2,7 @@ const { response } = require("express");
 const { db_postgres } = require("../../database/config");
 
 const getQuotations = async (req, res) => {
-  const quotations = await db_postgres.query("SELECT * FROM prof_cabecera");
+  const quotations = await db_postgres.query("SELECT * FROM prof_cabecera ORDER BY id_proforma DESC");
   res.json({
     ok: true,
     quotations,

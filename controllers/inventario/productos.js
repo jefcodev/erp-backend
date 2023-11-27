@@ -18,6 +18,7 @@ const getProductosAll = async (req, res) => {
         res.status(500).json({
             ok: false,
             msg: "Error al obtener los productos.",
+            
         });
     }
 };
