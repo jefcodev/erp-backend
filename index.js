@@ -63,7 +63,7 @@ app.use('/api/v1/contabilidad/libro-diario', require('./routes/contabilidad/libr
 app.use('/api/v1/contabilidad/libro-mayor', require('./routes/contabilidad/libro-mayor'));
 app.use('/api/v1/contabilidad/balance-general', require('./routes/contabilidad/balance-general'));
 app.use('/api/v1/contabilidad/estado-resultado', require('./routes/contabilidad/estado-resultado'));
-app.use('/api/v1/contabilidad/iva', require('./routes/contabilidad/IVA'));
+app.use('/api/v1/contabilidad/iva', require('./routes/contabilidad/iva'));
 
 // Busquedas
 app.use('/api/v1/todo/', require('./routes/busquedas'));
