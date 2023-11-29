@@ -2,7 +2,7 @@ const { response } = require("express");
 const { db_postgres } = require("../../database/config");
 
 const getQuotations = async (req, res) => {
-  const quotations = await db_postgres.query("SELECT * FROM prof_cabecera ORDER BY id_proforma DESC");
+  const quotations = await db_postgres.query("SELECT * FROM vent_proformas ORDER BY id_proforma DESC");
   res.json({
     ok: true,
     quotations,
@@ -14,7 +14,7 @@ const createQuotation = async (req, res = response) => {
 
   try {
     const quo_header = await db_postgres.query(
-      `INSERT INTO prof_cabecera (id_cliente, fecha, descuento, total, estado) VALUES ($1, $2, $3, $4, $5) RETURNING id_proforma`,
+      `INSERT INTO vent_proformas (id_cliente, fecha, descuento, total, estado) VALUES ($1, $2, $3, $4, $5) RETURNING id_proforma`,
       [id_cliente, fecha, descuento, total, false]
     );
 
@@ -32,7 +32,7 @@ const createQuotation = async (req, res = response) => {
         .join(",");
     
       await db_postgres.query(
-        `INSERT INTO prof_detalle (proforma_id, item, item_id, cantidad, precio_unitario, descuento) VALUES ${values}`
+        `INSERT INTO vent_detalles_proformas (id_proforma, item, item_id, cantidad, precio_unitario, descuento) VALUES ${values}`
       );
     }
     res.json({

@@ -84,11 +84,11 @@ const insertarEquipos = async (capituloId, equipos) => {
     const valoresEquipos = equipos
       .map(
         (equipo) =>
-          `(${capituloId}, '${equipo.codigoe}', '${equipo.descripcione}', ${equipo.cantidade},'${equipo.unidade}',${equipo.precioe} )`
+          `(${capituloId}, '${equipo.codigoe}', '${equipo.descripcione}', ${equipo.cantidade},${equipo.depreciacion},'${equipo.unidade}',${equipo.precioe} )`
       )
       .join(",");
     await db_postgres.query(
-      `INSERT INTO apu_equipos (id_capitulo, codigo, descripcion, cantidad, unidad, precio) VALUES ${valoresEquipos}`
+      `INSERT INTO apu_equipos (id_capitulo, codigo, descripcion, cantidad, depreciacion,unidad, precio) VALUES ${valoresEquipos}`
     );
   }
 };
