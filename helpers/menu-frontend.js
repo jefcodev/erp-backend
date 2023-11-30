@@ -8,8 +8,8 @@ const getMenuFrontend = (role) => {
         icono: "mdi mdi-security",
         submenu: [
           { titulo: "Usuarios", url: "users" },
-          { titulo: "Roles", url: "roles" },
-          { titulo: "Permisos", url: "" },
+         /*  { titulo: "Roles", url: "roles" },
+          { titulo: "Permisos", url: "" }, */
         ],
       },
       {
@@ -17,7 +17,7 @@ const getMenuFrontend = (role) => {
         icono: "mdi mdi-account-box",
         submenu: [
           { titulo: "Clientes", url: "clientes" },
-          { titulo: "Grupos de Clientes", url: "" },
+          /* { titulo: "Grupos de Clientes", url: "" }, */
           { titulo: "Proveedores", url: "proveedores" },
         ],
       },
@@ -27,8 +27,8 @@ const getMenuFrontend = (role) => {
         submenu: [
           { titulo: "Proveedores", url: "proveedores" },
           { titulo: "Compras", url: "compras" },
-          { titulo: "Orden de Compras", url: "" },
-          { titulo: "Egresos", url: "" },
+          /* { titulo: "Orden de Compras", url: "" },
+          { titulo: "Egresos", url: "" }, */
         ],
       },
       {
@@ -37,11 +37,11 @@ const getMenuFrontend = (role) => {
         submenu: [
           { titulo: "Clientes", url: "clientes" },
           { titulo: "Ventas", url: "ventas" },
-          { titulo: "Facturación Electrónica", url: "" },
+         /*  { titulo: "Facturación Electrónica", url: "" }, */
           { titulo: "Proformas", url: "quotation" },
           { titulo: "Lista de Proformas", url: "quotations" },
-          { titulo: "Punto de Venta", url: "" },
-          { titulo: "Ingresos", url: "" },
+         /*  { titulo: "Punto de Venta", url: "" },
+          { titulo: "Ingresos", url: "" }, */
         ],
       },
       {
@@ -49,15 +49,15 @@ const getMenuFrontend = (role) => {
         icono: "mdi mdi-dropbox",
         submenu: [
           { titulo: "Productos", url: "productos" },
-          { titulo: "Configuración", url: "" },
-          { titulo: "Tipos de Productos", url: "" },
-          { titulo: "Lista de Precios", url: "" },
-          { titulo: "Inventarios", url: "" },
+         /*  { titulo: "Configuración", url: "" }, */
+          /* { titulo: "Tipos de Productos", url: "" },
+          { titulo: "Lista de Precios", url: "" }, */
+          { titulo: "Inventarios", url: "inventory/tipos" },
           { titulo: "Unidades Medidad", url: "inventory/units" },
-          { titulo: "Marcas", url: "inventory/units" },
+          { titulo: "Marcas", url: "inventory/marcas" },
           { titulo: "Categorías", url: "inventory/categories" },
-          { titulo: "Sub Categorías", url: "" },
-          { titulo: "Clasificaciones", url: "" },
+         /*  { titulo: "Sub Categorías", url: "" },
+          { titulo: "Clasificaciones", url: "" }, */
         ],
       },
       {
@@ -66,7 +66,7 @@ const getMenuFrontend = (role) => {
         submenu: [
           { titulo: "APU", url: "apu" },
           { titulo: "Lista de APU´s", url: "apus" },
-          { titulo: "Configuración", url: "" },
+          /* { titulo: "Configuración", url: "" }, */
         ],
       },
       {
@@ -97,10 +97,10 @@ const getMenuFrontend = (role) => {
         titulo: "Reportes",
         icono: "mdi mdi-file-pdf",
         submenu: [
-          { titulo: "Compras", url: "" },
-          { titulo: "Ventas", url: "" },
+          { titulo: "Compras", url: "compras" },
+          { titulo: "Ventas", url: "ventas" },
           { titulo: "Productos", url: "productos" },
-          { titulo: "APUs", url: "" },
+          { titulo: "APUs", url: "apus" },
           { titulo: "Estado de Resultado", url: "estado-resultado" },
           { titulo: "Balance General", url: "balance-general" },
         ],
@@ -109,12 +109,13 @@ const getMenuFrontend = (role) => {
         titulo: "Configuración",
         icono: "mdi mdi-settings",
         submenu: [
-          { titulo: "Información Tributaria", url: "" },
-          { titulo: "Temas", url: "" },
+          /* { titulo: "Información Tributaria", url: "" }, */
+          { titulo: "Temas", url: "account-settings" },
+          { titulo: "Perfil", url: "./perfil" },
           { titulo: "Idioma", url: "" },
           { titulo: "Notificación", url: "" },
-          { titulo: "Privacidad", url: "" },
-          { titulo: "", url: "" },
+          /* { titulo: "Privacidad", url: "" },
+          { titulo: "", url: "" }, */
         ],
       }
     );
@@ -167,30 +168,32 @@ const getMenuFrontend = (role) => {
 
   if (role === "Bodeguero") {
     menu.push(
-        {
-            titulo: "Inventario",
-            icono: "mdi mdi-dropbox",
-            submenu: [
-              { titulo: "Productos", url: "productos" },
-              { titulo: "Configuración", url: "" },
-              { titulo: "Tipos de Productos", url: "" },
-              { titulo: "Lista de Precios", url: "" },
-              { titulo: "Inventarios", url: "" },
-              { titulo: "Unidades Medidad", url: "inventory/units" },
-              { titulo: "Marcas", url: "inventory/units" },
-              { titulo: "Categorías", url: "inventory/categories" },
-              { titulo: "Sub Categorías", url: "" },
-              { titulo: "Clasificaciones", url: "" },
-            ],
-          },
-          {
-            titulo: "APU",
-            icono: "mdi mdi-file-document-box",
-            submenu: [
-              { titulo: "APU", url: "apu" },
-              { titulo: "Configuración", url: "" },
-            ],
-          }
+      {
+        titulo: "Compras",
+        icono: "mdi mdi-arrow-down-bold-circle-outline",
+        submenu: [
+          /* { titulo: "Proveedores", url: "proveedores" }, */
+          { titulo: "Compras", url: "compras" },
+          /* { titulo: "Orden de Compras", url: "" },
+          { titulo: "Egresos", url: "" }, */
+        ],
+      },
+      {
+        titulo: "Inventario",
+        icono: "mdi mdi-dropbox",
+        submenu: [
+          { titulo: "Productos", url: "productos" },
+         /*  { titulo: "Configuración", url: "" }, */
+          /* { titulo: "Tipos de Productos", url: "" },
+          { titulo: "Lista de Precios", url: "" }, */
+          { titulo: "Inventarios", url: "inventory/tipos" },
+          { titulo: "Unidades Medidad", url: "inventory/units" },
+          { titulo: "Marcas", url: "inventory/marcas" },
+          { titulo: "Categorías", url: "inventory/categories" },
+         /*  { titulo: "Sub Categorías", url: "" },
+          { titulo: "Clasificaciones", url: "" }, */
+        ],
+      }
     );
   }
 

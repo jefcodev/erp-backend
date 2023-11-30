@@ -23,6 +23,9 @@ const getProductosAll = async (req, res) => {
     }
 };
 
+
+
+
 // Obtener todos los productos
 const getProductos = async (req, res) => {
     try {
@@ -37,6 +40,22 @@ const getProductos = async (req, res) => {
         res.status(500).json({
             ok: false,
             msg: "Error al obtener los productos.",
+        });
+    }
+};
+const getTiposInventario = async (req, res) => {
+    try {
+        //const productos = await db_postgres.query("SELECT * FROM inve_productos ORDER BY id_producto ASC");
+        const tipos = await db_postgres.query("SELECT * FROM inve_tipos_inventario  ");
+        res.json({
+            ok: true,
+            tipos,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            ok: false,
+            msg: "Error al obtener los datos.",
         });
     }
 };
@@ -118,7 +137,7 @@ const getProductoById = async (req, res) => {
 // Crear un nuevo producto
 const createProducto = async (req, res = response) => {
     //const { codigo_principal, descripcion, stock, precio_compra } = req.body;
-    const { codigo_principal, descripcion, stock, stock_minimo, stock_maximo, tarifa, precio_compra } = req.body;
+    const { codigo_principal, id_tipo_inventario, descripcion, stock, stock_minimo, stock_maximo, tarifa, precio_compra, id_unidad_medida } = req.body;
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({
@@ -129,8 +148,8 @@ const createProducto = async (req, res = response) => {
     }
     try {
         const producto = await db_postgres.one(
-            `INSERT INTO inve_productos (codigo_principal, descripcion, stock, stock_minimo, stock_maximo, tarifa, precio_compra, fecha_registro, estado) VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_DATE, $8) RETURNING *`,
-            [codigo_principal, descripcion, stock, stock_minimo, stock_maximo, tarifa, precio_compra, true]
+            `INSERT INTO inve_productos (codigo_principal, id_tipo_inventario, descripcion, stock, stock_minimo, stock_maximo, tarifa, precio_compra, fecha_registro, estado, id_unidad_medida) VALUES ($1, $2, $3, $4, $5, $6, $7, $8,CURRENT_DATE, $9,$10) RETURNING *`,
+            [codigo_principal, id_tipo_inventario, descripcion, stock, stock_minimo, stock_maximo, tarifa, precio_compra, true, id_unidad_medida]
         );
         res.json({
             ok: true,
@@ -243,4 +262,5 @@ module.exports = {
     updateProducto,
     deleteProducto,
     getProductosAll,
+    getTiposInventario
 };

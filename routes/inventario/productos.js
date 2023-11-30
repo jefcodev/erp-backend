@@ -5,12 +5,13 @@ const { Router } = require('express');
 const { check } = require('express-validator');
 const { validarCampos } = require('../../middlewares/validar-campos');
 
-const { getProductos, createProducto, getProductoById, deleteProducto, updateProducto, getProductosHerramientas, getProductosMateriales, getProductosAll, getPuestosTrabajo } = require('../../controllers/inventario/productos');
+const { getProductos, createProducto, getProductoById, deleteProducto, updateProducto, getProductosHerramientas, getProductosMateriales, getProductosAll, getPuestosTrabajo, getTiposInventario } = require('../../controllers/inventario/productos');
 const { validarJWT } = require('../../middlewares/validar-jwt');
 
 const router = Router();
 
 router.get('/', getProductos);
+router.get('/tipos', getTiposInventario);
 router.get('/all/', getProductosAll);
 router.get('/materiales', getProductosMateriales);
 router.get('/herramientas', getProductosHerramientas);
