@@ -271,8 +271,6 @@ const updateVenta = async (req, res = response) => {
 
         }
 
-
-
         res.json({
             ok: true,
             msg: "Venta actualizada correctamente.",

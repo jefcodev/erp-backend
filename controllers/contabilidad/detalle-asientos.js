@@ -6,11 +6,11 @@ const { db_postgres } = require("../../database/config");
 // Obtener todos los detalle_asientos
 const getDetalleAsientos = async (req, res) => {
     try {
-        const detalle_asientos = await db_postgres.query("SELECT * FROM cont_detalles_asientos ORDER BY id_detalle_asiento ASC");
+        const detalles_asientos = await db_postgres.query("SELECT * FROM cont_detalles_asientos ORDER BY id_detalle_asiento ASC");
 
         res.json({
             ok: true,
-            detalle_asientos,
+            detalles_asientos,
         });
     } catch (error) {
         console.error(error);
@@ -58,9 +58,9 @@ const getDetallesAsientoByIdAsiento = async (req, res) => {
             });
         }
 
-        const detalles_asiento = await db_postgres.query("SELECT * FROM cont_detalles_asientos WHERE id_asiento = $1", [id_asiento]);
+        const detalles_asientos = await db_postgres.query("SELECT * FROM cont_detalles_asientos WHERE id_asiento = $1", [id_asiento]);
 
-        if (!detalles_asiento) {
+        if (!detalles_asientos) {
             return res.status(404).json({
                 ok: false,
                 msg: "Detalles de Asiento no encontrado.",
@@ -82,12 +82,12 @@ const getDetallesAsientoByIdAsiento = async (req, res) => {
         const total_debe = parseFloat(sumaTotalResult[0].total_debe || 0);
         const total_haber = parseFloat(sumaTotalResult[0].total_haber || 0);
 
-        console.log("Lleva detalle Asiento por id_asiento", detalles_asiento)
+        console.log("Lleva detalle Asiento por id_asiento", detalles_asientos)
         console.log("SUMA DEBE", total_debe)
         console.log("SUMA HABER", total_haber)
         res.json({
             ok: true,
-            detalles_asiento,
+            detalles_asientos,
             total_debe,
             total_haber,
         });
