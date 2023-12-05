@@ -52,9 +52,9 @@ const getMenuFrontend = (role) => {
          /*  { titulo: "Configuración", url: "" }, */
           /* { titulo: "Tipos de Productos", url: "" },
           { titulo: "Lista de Precios", url: "" }, */
-          { titulo: "Inventarios", url: "inventory/tipos" },
+          //{ titulo: "Inventarios", url: "inventory/tipos" },
           { titulo: "Unidades Medidad", url: "inventory/units" },
-          { titulo: "Marcas", url: "inventory/marcas" },
+          //{ titulo: "Marcas", url: "inventory/marcas" },
           { titulo: "Categorías", url: "inventory/categories" },
          /*  { titulo: "Sub Categorías", url: "" },
           { titulo: "Clasificaciones", url: "" }, */
@@ -185,9 +185,9 @@ const getMenuFrontend = (role) => {
          /*  { titulo: "Configuración", url: "" }, */
           /* { titulo: "Tipos de Productos", url: "" },
           { titulo: "Lista de Precios", url: "" }, */
-          { titulo: "Inventarios", url: "inventory/tipos" },
+          //{ titulo: "Inventarios", url: "inventory/tipos" },
           { titulo: "Unidades Medidad", url: "inventory/units" },
-          { titulo: "Marcas", url: "inventory/marcas" },
+          //{ titulo: "Marcas", url: "inventory/marcas" },
           { titulo: "Categorías", url: "inventory/categories" },
          /*  { titulo: "Sub Categorías", url: "" },
           { titulo: "Clasificaciones", url: "" }, */
