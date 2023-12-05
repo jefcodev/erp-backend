@@ -82,7 +82,6 @@ const getMenuFrontend = (role) => {
           { titulo: "Estado de Resultado", url: "estado-resultado" },
           { titulo: "Balance General", url: "balance-general" },
           { titulo: "Impuesto - IVA", url: "iva" },
-          { titulo: "Impuesto - IR", url: "ir" },
         ],
       },
       {

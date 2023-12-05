@@ -58,7 +58,7 @@ app.use('/api/v1/contabilidad/pagos', require('./routes/contabilidad/pagos'));
 app.use('/api/v1/contabilidad/formas-pago', require('./routes/contabilidad/formas-pago'));
 app.use('/api/v1/contabilidad/tarifas-iva', require('./routes/contabilidad/tarifas-iva'));
 app.use('/api/v1/contabilidad/asientos', require('./routes/contabilidad/asientos'));
-app.use('/api/v1/contabilidad/detalle-asientos', require('./routes/contabilidad/detalle-asientos'));
+app.use('/api/v1/contabilidad/detalles-asientos', require('./routes/contabilidad/detalle-asientos'));
 app.use('/api/v1/contabilidad/libro-diario', require('./routes/contabilidad/libro-diario'));
 app.use('/api/v1/contabilidad/libro-mayor', require('./routes/contabilidad/libro-mayor'));
 app.use('/api/v1/contabilidad/balance-general', require('./routes/contabilidad/balance-general'));
