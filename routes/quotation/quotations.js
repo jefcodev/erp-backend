@@ -9,7 +9,7 @@ const { validarCampos } = require('../../middlewares/validar-campos');
 
 const { getClients, createClient } = require('../../controllers/quotations/clients');
 const { getGroupClients } = require('../../controllers/quotations/group_clients');
-const { getQuotations, createQuotation } = require('../../controllers/quotations/quotations');
+const { getQuotations, createQuotation, getQuotationsId, createVenta, updateQuotation } = require('../../controllers/quotations/quotations');
 
 
 
@@ -27,7 +27,11 @@ router.get( '/clients/group' ,validarJWT, getGroupClients );
 
 //Quotations
 router.get( '/' ,validarJWT, getQuotations );
+router.get( '/:id' ,validarJWT, getQuotationsId );
+router.post('/factura', createVenta);
+
 router.post( '/' ,validarJWT, createQuotation);
+router.put( '/' ,validarJWT, updateQuotation);
 
 
 
