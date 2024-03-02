@@ -3,18 +3,18 @@ const config = {
 
 
     ///Local
-/*
+
      host: "localhost",
     port: "5432",
     database: "inveservicefgl",
     user: "postgres",
-    password: "2023" */
+    password: "2023"
    
-    host: 'systemcode.ec',
+    /* host: 'systemcode.ec',
     port: 5432,
     database: 'inveservicefgl',
     user: 'user_inveservice',
-    password: 'v@3Whv858' 
+    password: 'v@3Whv858'  */
     
 };
 

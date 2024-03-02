@@ -9,13 +9,7 @@ const login = async (req, res = response) => {
   const { email, password } = req.body;
 
   try {
-    // Verificar email
-
-    const usuarioDB = await db_postgres.oneOrNone(
-      "SELECT * FROM sec_users WHERE email = $1",
-      [email]
-    );
-    
+    const usuarioDB = await db_postgres.oneOrNone( "SELECT * FROM sec_users WHERE email = $1", [email]);
 
     //Verificar el email
     if (!usuarioDB) {
@@ -24,8 +18,6 @@ const login = async (req, res = response) => {
         msg: "Email no encontrado",
       });
     }
-    
-
     // Verificar contraseña
     const validPassword = bcrypt.compareSync(password, usuarioDB.password);
     if (!validPassword) {
@@ -37,29 +29,22 @@ const login = async (req, res = response) => {
 
     // Verificar estado de cuenta
     const estado = usuarioDB.estado;
-
     const rol_id = usuarioDB.rol_id;
-
-    const result_role = await db_postgres.oneOrNone("SELECT descripcion FROM sec_roles WHERE id = $1", [rol_id]);
-
-
-    
-    if(estado === false){
-        return res.status(404).json({
-            ok: false,
-            msg: "Cuenta inactiva",
-          });
-    } 
-
-    // Generar el TOKEN - JWT
+    const result_role = await db_postgres.oneOrNone( "SELECT descripcion FROM sec_roles WHERE id = $1", [rol_id] );
+    if (estado === false) {
+      return res.status(404).json({
+        ok: false,
+        msg: "Cuenta inactiva",
+      });
+    }
+    // Generar TOKEN - JWT
     const token = await generarJWT(usuarioDB.id);
-
     delete usuarioDB.password;
     res.json({
       ok: true,
       token,
       usuario: usuarioDB,
-      menu: getMenuFrontend(result_role.descripcion)
+      menu: getMenuFrontend(result_role.descripcion),
     });
   } catch (error) {
     console.log(error);
@@ -71,7 +56,6 @@ const login = async (req, res = response) => {
 };
 
 const renewToken = async (req, res = response) => {
-
   const uid = req.uid;
 
   // Generar el TOKEN - JWT
@@ -82,10 +66,12 @@ const renewToken = async (req, res = response) => {
     [uid]
   );
 
-
   const rol_id = usuarioDB.rol_id;
 
-  const result_role = await db_postgres.oneOrNone("SELECT descripcion FROM sec_roles WHERE id = $1", [rol_id]);
+  const result_role = await db_postgres.oneOrNone(
+    "SELECT descripcion FROM sec_roles WHERE id = $1",
+    [rol_id]
+  );
 
   delete usuarioDB.password;
 
@@ -93,7 +79,7 @@ const renewToken = async (req, res = response) => {
     ok: true,
     token,
     usuario: usuarioDB,
-    menu: getMenuFrontend(result_role.descripcion)
+    menu: getMenuFrontend(result_role.descripcion),
   });
 };
 

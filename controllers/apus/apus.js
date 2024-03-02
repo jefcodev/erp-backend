@@ -141,7 +141,6 @@ const createApu = async (req, res) => {
       insertarEquipos(capituloId, equipos),
       insertarManoObra(capituloId, mano_obra),
       insertarTransporte(capituloId, transporte),
-
     ]);
 
     res.json({
